@@ -35,7 +35,7 @@
         "printWidth": 120
     },
     "devDependencies": {
-        "@types/node": "20.4.1",
+        "@types/node": "20.6.4",
         "@types/react": "18.2.22",
         "prettier": "^3.0.0",
         "prettier-plugin-tailwindcss": "^0.4.0"
