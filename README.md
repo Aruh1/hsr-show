@@ -1,3 +1,3 @@
 # Honkai: Star Rail Character Showcase
 
-![showcase]()
+![showcase](https://raw.githubusercontent.com/Aruh1/hsr-show/main/public/showcase.png)
