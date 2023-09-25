@@ -20,7 +20,6 @@
 
 :root, body, html {
   height: 100%;
-  font-family: var(--font-outfit);
 }
 
 .BG {
