@@ -83,7 +83,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
     <div className={`relative min-h-[650px] w-[1400px] rounded-3xl ${blur ? 'BG' : 'Blur-BG'} overflow-hidden`}>
       <div className="absolute bottom-2 left-4 z-10">
         <span className={`${hideUID ? 'hidden' : ''} shadow-black [text-shadow:1px_1px_2px_var(--tw-shadow-color)]`}>
-          {uid} · {nickname}
+          {uid} • {nickname}
         </span>
       </div>
       <div className="flex flex-row items-center">

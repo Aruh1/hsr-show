@@ -1,11 +1,12 @@
 import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import Footer from './Footer';
-import { Nunito } from 'next/font/google';
+import { Outfit } from 'next/font/google';
 
-const nunito = Nunito({
+const outfit = Outfit({
   subsets: ['latin'],
-  variable: '--font-nunito',
+  // src: '../public/zh-cn.ttf',
+  variable: '--font-outfit',
 });
 
 export const metadata = {
@@ -47,7 +48,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={nunito.variable}>
+    <html lang="en" className={outfit.variable}>
       <body className="no-scrollbar bg-gradient-to-br from-[#0a0c22] via-[#11132a] to-[#2b3057] bg-fixed font-semibold text-white">
         {children}
         <Footer />
