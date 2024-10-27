@@ -12,7 +12,7 @@ const Footer = () => {
         <footer className="mx-auto max-w-3xl overflow-hidden px-4 sm:px-6 md:max-w-5xl">
             <hr className="mx-auto mt-8 h-0.5 w-full border-0 bg-white" />
             <div className="mx-auto flex flex-col items-center gap-1 p-2 text-center md:flex-row md:justify-between">
-                <span>© {currentYear} pololer</span>
+                <span href="https://pololer.my.id">© {currentYear} pololer</span>
                 <span className="text-sm">
                     This site is not affiliated with miHoYo &amp; All game content and assets are trademarks and
                     copyrights of miHoYo.
@@ -38,7 +38,7 @@ const Footer = () => {
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
+                            viewBox="02 0 24 24"
                             fill="currentColor"
                             className="cursor-pointer transition-transform hover:-translate-y-1"
                             width={30}

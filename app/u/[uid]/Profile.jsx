@@ -27,6 +27,7 @@ const Profile = () => {
     const params = useParams();
     const uid = params.uid;
     const nickname = data?.player.nickname;
+    const times = new Date().toLocaleTimeString();
 
     useEffect(() => {
         setHideUID(JSON.parse(localStorage.getItem("hideUID")));
@@ -181,6 +182,10 @@ const Profile = () => {
                                 <div className="flex flex-row flex-wrap justify-between gap-x-4">
                                     <span className="text-xl">Achievements Unlocked: </span>
                                     <span className="text-xl">{data?.player.space_info.achievement_count}</span>
+                                </div>
+                                <div className="flex flex-row flex-wrap justify-between gap-x-4">
+                                    <span className="text-xl">Locale Updated: </span>
+                                    <span className="text-xl">{times}</span>
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-2">
