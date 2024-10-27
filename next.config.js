@@ -4,10 +4,12 @@ const nextConfig = {};
 module.exports = {
     reactStrictMode: true,
     images: {
-        remotePatterns: [{
-            protocol: 'https',
-            hostname: 'cdn.jsdelivr.net',
-            pathname: '**',
-        }]
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "cdn.jsdelivr.net",
+                pathname: "**"
+            }
+        ]
     }
 };
