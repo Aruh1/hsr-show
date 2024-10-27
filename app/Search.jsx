@@ -68,7 +68,7 @@ export default function Search() {
             </div>
             {savedUID && (
                 <div className="flex cursor-pointer flex-row items-center space-x-1 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
-                    <a href={`/u/${savedUID}`} className="flex gap-2">
+                    <Link href={`/u/${savedUID}`} className="flex gap-2">
                         <Image
                             src="https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/icon/sign/SettingsAccount.png"
                             alt="Example Icon"
@@ -76,7 +76,7 @@ export default function Search() {
                             height={24}
                         />
                         <span>Linked Profile: {localStorage.getItem("uid")}</span>
-                    </a>
+                    </Link>
                 </div>
             )}
         </div>

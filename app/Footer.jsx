@@ -3,6 +3,7 @@
 import { AiOutlineGithub } from "react-icons/ai";
 import { BsDiscord } from "react-icons/bs";
 import { SiKofi } from "react-icons/si";
+import Link from "next/link";
 
 const Footer = () => {
     return (
@@ -15,18 +16,18 @@ const Footer = () => {
                     copyrights of miHoYo.
                 </span>
                 <div className="mb-1 flex flex-row items-center justify-center space-x-2">
-                    <a href="https://discord.gg/qefR5pXp8z" aria-label="Discord" rel="noreferrer" target="_blank">
+                    <Link href="https://discord.gg/qefR5pXp8z" aria-label="Discord" rel="noreferrer" target="_blank">
                         <BsDiscord className="cursor-pointer transition-transform hover:-translate-y-1" size={30} />
-                    </a>
-                    <a href="https://github.com/Aruh1/hsr-show" aria-label="GitHub" rel="noreferrer" target="_blank">
+                    </Link>
+                    <Link href="https://github.com/Aruh1/hsr-show" aria-label="GitHub" rel="noreferrer" target="_blank">
                         <AiOutlineGithub
                             className="cursor-pointer transition-transform hover:-translate-y-1"
                             size={30}
                         />
-                    </a>
-                    <a href="https://ko-fi.com/pololer" aria-label="Kofi" rel="noreferrer" target="_blank">
+                    </Link>
+                    <Link href="https://ko-fi.com/pololer" aria-label="Kofi" rel="noreferrer" target="_blank">
                         <SiKofi className="cursor-pointer transition-transform hover:-translate-y-1" size={30} />
-                    </a>
+                    </Link>
                 </div>
             </div>
         </footer>

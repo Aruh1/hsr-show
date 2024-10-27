@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link"
 
 export default function NotFound() {
     return (
@@ -8,11 +9,11 @@ export default function NotFound() {
                 <div>
                     <h1 className="text-4xl">Kuru kuru ~ 404!</h1>
                     <div>
-                        <a href="/">
+                        <Link href="/">
                             <div className="mt-2 cursor-pointer items-center space-x-1 rounded-full bg-stone-800 px-3 py-1 text-xl shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
                                 Home
                             </div>
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
