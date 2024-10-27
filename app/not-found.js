@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center text-center">
       <div className="flex flex-col gap-5">
-        <Image src="/herta-kurukuru.gif" alt="Loading" width={256} height={256} />
+        <Image unoptimized={true} src="/herta-kurukuru.gif" alt="Loading" width={256} height={256} />
         <div>
           <h1 className="text-4xl">Kuru kuru ~ 404!</h1>
           <div>

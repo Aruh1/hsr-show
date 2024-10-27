@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-export async function GET(req, { params }) {
+export async function GET(req, props) {
+  const params = await props.params;
   const { uid } = params;
   const { searchParams } = new URL(req.url);
   const lang = searchParams.get('lang');
