@@ -15,10 +15,10 @@
         "autoprefixer": "10.4.20",
         "axios": "^1.7.7",
         "eslint": "9.13.0",
-        "eslint-config-next": "15.0.1",
+        "eslint-config-next": "15.0.2",
         "file-saver": "^2.0.5",
         "html2canvas": "^1.4.1",
-        "next": "^15.0.1",
+        "next": "^15.0.2",
         "postcss": "8.4.47",
         "prettier": "3.3.3",
         "react": "18.3.1",
@@ -36,7 +36,7 @@
         "printWidth": 120
     },
     "devDependencies": {
-        "@types/node": "22.8.2",
+        "@types/node": "22.8.4",
         "@types/react": "18.3.12",
         "prettier": "^3.3.3",
         "prettier-plugin-tailwindcss": "^0.6.8"
