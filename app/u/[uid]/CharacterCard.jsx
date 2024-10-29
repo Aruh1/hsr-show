@@ -30,9 +30,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
         );
         return (
             <div className="flex flex-col items-center justify-center gap-1">
-                {propertyIcons.map(propertyIcon => (
+                {propertyIcons.map((propertyIcon, index) => (
                     <img
-                        key={propertyIcon.id}
+                        key={propertyIcon.id || index}
                         src={asset_url + propertyIcon.icon}
                         alt={`Property Icon ${propertyIcon.id}`}
                         className={`h-6 w-6 rounded-full bg-neutral-800 p-0.5 ${propertyIcon.level === 0 && "opacity-30"}`}
@@ -48,19 +48,19 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
         const iconStyle = icon.icon.startsWith("icon/skill/")
             ? "w-10 h-10 border-2 border-neutral-300"
             : "w-6 h-6 p-0.5";
-        const iconState = icon.level === 0 && "opacity-30";
+        const iconState = icon.level === 0 ? "opacity-30" : "";
         let show = true;
         if (["Rogue", "Priest", "Mage"].includes(path)) {
             show = !["Point09", "Point12", "Point15", "Point18"].includes(icon.anchor);
         }
+
         return (
             show && (
                 <div
-                    key={icon.id}
                     className={`flex items-center justify-center gap-1
-          ${!["Rogue", "Priest", "Warrior", "Warlock", "Shaman", "Mage"].includes(path) ? "flex-row" : "flex-col"}
-          ${path === "Knight" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
-          ${path === "Knight" && icon.anchor === "Point09" ? "flex-col" : ""}`}
+                        ${!["Rogue", "Priest", "Warrior", "Warlock", "Shaman", "Mage"].includes(path) ? "flex-row" : "flex-col"}
+                        ${path === "Knight" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
+                        ${path === "Knight" && icon.anchor === "Point09" ? "flex-col" : ""}`}
                 >
                     <img
                         src={asset_url + icon.icon}
@@ -69,14 +69,13 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                     />
                     {children &&
                         children.map((childIcon, index) => (
-                            <>
-                                <TraceTree key={childIcon.id} iconData={childIcon} iconMap={iconMap} index={index} />
-                            </>
+                            <TraceTree key={childIcon.id || index} iconData={childIcon} iconMap={iconMap} path={path} />
                         ))}
                 </div>
             )
         );
     };
+
     const majorTraces = character.skill_trees.filter(
         icon => icon.parent === null && icon.max_level === 1 && icon.anchor !== "Point05"
     );
@@ -108,9 +107,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                     </div>
                     <div className={`absolute right-0 top-0 mr-[-15px] pt-3`}>
                         <div className="flex flex-col">
-                            {character?.rank_icons.slice(0, character?.rank).map(rank_icon => (
+                            {character?.rank_icons.slice(0, character?.rank).map((rank_icon, index) => (
                                 <div
-                                    key={rank_icon.id}
+                                    key={rank_icon.id || index}
                                     className="relative my-1 flex rounded-full border-2 border-neutral-300 bg-neutral-800"
                                 >
                                     <img src={asset_url + rank_icon} alt="Rank Icon" className="h-auto w-10" />
@@ -118,9 +117,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                             ))}
                         </div>
                         <div className="flex flex-col">
-                            {character?.rank_icons.slice(character?.rank, 6).map(rank_icon => (
+                            {character?.rank_icons.slice(character?.rank, 6).map((rank_icon, index) => (
                                 <div
-                                    key={rank_icon.id}
+                                    key={rank_icon.id || index}
                                     className="relative my-1 flex rounded-full border-2 border-neutral-500 bg-neutral-800"
                                 >
                                     <img
@@ -177,8 +176,8 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                     />
                                 </div>
                                 <div className="flex h-full w-1/3 flex-col justify-center gap-8">
-                                    {character?.skill_trees.slice(0, 2).map(skill => (
-                                        <div key={skill.id} className="flex flex-col items-center">
+                                    {character?.skill_trees.slice(0, 2).map((skill, index) => (
+                                        <div key={skill.id || index} className="flex flex-col items-center">
                                             <div className="relative flex flex-col items-center">
                                                 <img
                                                     src={asset_url + skill.icon}
@@ -211,8 +210,8 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                     </div>
                                 </div>
                                 <div className="flex h-full w-1/3 flex-col justify-center gap-8">
-                                    {character?.skill_trees.slice(3, 5).map(skill => (
-                                        <div key={skill.id} className="flex flex-col items-center">
+                                    {character?.skill_trees.slice(3, 5).map((skill, index) => (
+                                        <div key={skill.id || index} className="flex flex-col items-center">
                                             <div className="relative flex flex-col items-center">
                                                 <img
                                                     src={asset_url + skill.icon}
@@ -288,9 +287,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                             </div>
                                         </div>
                                         <div className="flex flex-row gap-1.5">
-                                            {character?.light_cone?.attributes.map(attribute => (
+                                            {character?.light_cone?.attributes.map((attribute, index) => (
                                                 <div
-                                                    key={attribute.id}
+                                                    key={attribute.id || index}
                                                     className="black-blur flex flex-row items-center rounded pr-1"
                                                 >
                                                     <img
@@ -311,9 +310,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                 <>
                                     <hr />
                                     <div className="flex flex-col items-center gap-1">
-                                        {character?.relic_sets.map(relic_set => (
+                                        {character?.relic_sets.map((relic_set, index) => (
                                             <div
-                                                key={relic_set.id}
+                                                key={relic_set.id || index}
                                                 className="flex w-full flex-row justify-between text-left"
                                             >
                                                 <span className="text-base">{relic_set.name}</span>
@@ -337,8 +336,8 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                             }
               ${!allTraces ? "h-[500px]" : "h-[650px]"}`}
                         >
-                            {character?.property.map(stat => (
-                                <div key={stat.id} className="flex flex-row items-center justify-between">
+                            {character?.property.map((stat, index) => (
+                                <div key={stat.id || index} className="flex flex-row items-center justify-between">
                                     <div className="flex flex-row items-center">
                                         <img src={asset_url + stat.icon} alt="Stat Icon" className="h-auto w-10" />
                                         <span>{stat.name}</span>
@@ -406,9 +405,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                             <>
                                 <hr />
                                 <div className="flex flex-col items-center gap-1">
-                                    {character?.relic_sets.map(relic_set => (
+                                    {character?.relic_sets.map((relic_set, index) => (
                                         <div
-                                            key={relic_set.id}
+                                            key={relic_set.id || index}
                                             className="flex w-full flex-row justify-between text-left"
                                         >
                                             <span>{relic_set.name}</span>
@@ -425,9 +424,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                     </div>
                     <div className="w-1/3">
                         <div className="flex h-[650px] flex-col justify-between py-3 text-lg">
-                            {character?.relics.map(relic => (
+                            {character?.relics.map((relic, index) => (
                                 <div
-                                    key={relic.id}
+                                    key={relic.id || index}
                                     className={`black-blur relative flex flex-row items-center rounded-s-lg border-l-2 p-1
                   ${relic.rarity == 5 && "border-yellow-600"}
                   ${relic.rarity == 4 && "border-purple-600"}

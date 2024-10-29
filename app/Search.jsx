@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { BsDiscord } from "react-icons/bs";
-import { SiKofi } from "react-icons/si";
 
 export default function Search() {
     const [UID, setUID] = useState("");
     const [savedUID, setSavedUID] = useState("");
     const [lang, setLang] = useState("");
+    const router = useRouter();
 
     useEffect(() => {
         if (!localStorage.getItem("lang")) {
@@ -18,6 +18,19 @@ export default function Search() {
         setSavedUID(localStorage.getItem("uid"));
         setLang(localStorage.getItem("lang"));
     }, []);
+
+    const handleKeyDown = e => {
+        if (e.key === "Enter" && UID) {
+            router.push(`/u/${UID}`);
+        }
+    };
+
+    const handleUIDChange = e => {
+        const value = e.target.value;
+        if (/^\d*$/.test(value) && value.length <= 10) {
+            setUID(value);
+        }
+    };
 
     return (
         <div className="text-centers flex flex-col items-center gap-3">
@@ -56,13 +69,17 @@ export default function Search() {
                     <input
                         type="text"
                         name="uid"
-                        onChange={e => setUID(e.target.value)}
+                        onChange={handleUIDChange}
                         value={UID}
                         placeholder="Enter UID"
+                        onKeyDown={handleKeyDown}
                         className="w-full appearance-none rounded border-2 border-gray-200 bg-gray-200 px-4 py-2 text-center leading-tight text-gray-700 focus:border-purple-500 focus:bg-white focus:outline-none"
                     />
-                    <div className="focus:shadow-outline flex cursor-pointer items-center rounded bg-purple-600 px-4 py-2 font-bold text-white shadow hover:bg-purple-500 focus:outline-none">
-                        <Link href={`/u/${UID}`}>Search</Link>
+                    <div
+                        onClick={() => UID && router.push(`/u/${UID}`)}
+                        className="focus:shadow-outline flex cursor-pointer items-center rounded bg-purple-600 px-4 py-2 font-bold text-white shadow hover:bg-purple-500 focus:outline-none"
+                    >
+                        <span>Search</span>
                     </div>
                 </div>
             </div>
