@@ -81,7 +81,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
     );
 
     return (
-        <div className={`relative min-h-[650px] w-[1400px] rounded-3xl ${blur ? "BG" : "Blur-BG"} overflow-hidden`}>
+        <div
+            className={`relative min-h-[650px] w-full max-w-[1400px] rounded-3xl ${blur ? "BG" : "Blur-BG"} overflow-hidden`}
+        >
             <div className="absolute bottom-2 left-4 z-10">
                 <span
                     className={`${hideUID ? "hidden" : ""} shadow-black [text-shadow:1px_1px_2px_var(--tw-shadow-color)]`}
@@ -89,8 +91,8 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                     {uid} • {nickname}
                 </span>
             </div>
-            <div className="flex flex-row items-center">
-                <div className="relative min-h-[650px] w-[28%]">
+            <div className="flex flex-col md:flex-row items-center">
+                <div className="relative min-h-[650px] w-full md:w-[28%]">
                     <div className="flex h-[650px] items-center">
                         {customImage ? (
                             <div
@@ -136,11 +138,11 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                     </div>
                 </div>
                 <div
-                    className={`relative flex min-h-[650px] w-[72%] flex-row items-center gap-3.5 rounded-r-3xl pl-10 ${
+                    className={`relative flex min-h-[650px] w-full md:w-[72%] flex-col md:flex-row items-center gap-3.5 rounded-r-3xl pl-10 ${
                         blur ? "Fade-BG" : "Fade-Blur-BG"
                     }`}
                 >
-                    <div className="flex h-[650px] w-1/3 flex-col justify-between py-3">
+                    <div className="flex h-[650px] w-full md:w-1/3 flex-col justify-between py-3">
                         <div className="flex h-full flex-col justify-between">
                             <div className="">
                                 <div className="flex flex-row items-center justify-between">
@@ -329,7 +331,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                         </div>
                     </div>
 
-                    <div className="flex h-[650px] w-1/3 flex-col justify-between py-3">
+                    <div className="flex h-[650px] w-full md:w-1/3 flex-col justify-between py-3">
                         <div
                             className={`flex w-full flex-col justify-between gap-y-0.5 ${
                                 !allTraces && character?.property?.length >= 10 ? "text-base" : "text-lg"
@@ -422,7 +424,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                             </>
                         )}
                     </div>
-                    <div className="w-1/3">
+                    <div className="w-full md:w-1/3">
                         <div className="flex h-[650px] flex-col justify-between py-3 text-lg">
                             {character?.relics.map((relic, index) => (
                                 <div

@@ -235,11 +235,10 @@ const Profile = () => {
                                 </div>
                             </div>
                             {showSavedBuilds ? (
-                                <div className="mb-1 flex w-[400px] gap-6 overflow-x-auto p-6 md:w-[600px]">
+                                <div className="mb-1 flex w-full gap-6 overflow-x-auto p-6">
                                     {savedBuilds.map((build, index) => (
                                         <div
                                             className={`
-                          
                           flex
                           w-[100px]
                           cursor-pointer 
@@ -323,7 +322,7 @@ const Profile = () => {
                         </div>
                         {character && (
                             <>
-                                <div className="flex w-screen overflow-x-auto 2xl:justify-center">
+                                <div className="flex w-full overflow-x-auto 2xl:justify-center">
                                     <div
                                         className="showcase mx-3"
                                         ref={ref}
@@ -342,7 +341,7 @@ const Profile = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex w-screen flex-col items-center justify-center">
+                                <div className="flex w-full flex-col items-center justify-center">
                                     <div
                                         className="my-2 flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                         onClick={() => saveImage(character.name, `${customImage ? 1 : 1.5}`)}
