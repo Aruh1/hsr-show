@@ -210,13 +210,25 @@ const Profile = () => {
                                         >
                                             <Image
                                                 src={asset_url + "icon/sign/FriendAddIcon.png"}
-                                                alt="Example Icon"
+                                                alt="UID Linked"
                                                 width={24}
                                                 height={24}
                                             />
                                             <span>Link UID</span>
                                         </div>
                                     )}
+                                    <div
+                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                        onClick={() => router.push(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`)}
+                                    >
+                                        <Image
+                                            src={asset_url + "icon/sign/Detail.png"}
+                                            alt="API Infomation"
+                                            width={24}
+                                            height={24}
+                                        />
+                                        <span>API Infomation</span>
+                                    </div>
                                     <div
                                         className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                         onClick={() => {

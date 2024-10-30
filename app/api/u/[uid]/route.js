@@ -10,7 +10,7 @@ export async function GET(req, props) {
         if (!uid) {
             return NextResponse.json({ error: "Missing UID parameter." }, { status: 400 });
         }
-        
+
         if (!/^\d+$/.test(uid) || uid.length > 10) {
             return NextResponse.json(
                 { error: "Invalid UID. Must be an integer and up to 10 characters long." },
