@@ -5,9 +5,12 @@ export async function GET(req, props) {
         const params = await props.params;
         const { uid } = params;
         const { searchParams } = new URL(req.url);
-        const lang = searchParams.get("lang");
+        const lang = searchParams.get("lang") || "en";
 
-        // Validasi UID
+        if (!uid) {
+            return NextResponse.json({ error: "Missing UID parameter." }, { status: 400 });
+        }
+        
         if (!/^\d+$/.test(uid) || uid.length > 10) {
             return NextResponse.json(
                 { error: "Invalid UID. Must be an integer and up to 10 characters long." },
@@ -15,31 +18,41 @@ export async function GET(req, props) {
             );
         }
 
-        const res = await fetch(`https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}`);
+        const apiUrl = `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}`;
+        const res = await fetch(apiUrl);
         if (!res.ok) {
-            return NextResponse.json({ error: "Failed to fetch data" }, { status: res.status });
+            console.error("Fetch request failed:", res.status, res.statusText);
+            return NextResponse.json(
+                { error: `Failed to fetch data: ${res.status} ${res.statusText}` },
+                { status: res.status }
+            );
         }
 
         const data = await res.json();
 
-        for (const character of data["characters"]) {
-            const attributeMap = {};
-            character["attributes"].forEach(attribute => {
-                attributeMap[attribute.field] = attribute;
+        if (!data.characters) {
+            return NextResponse.json({ error: "No characters found in data." }, { status: 404 });
+        }
+
+        for (const character of data.characters) {
+            const attributeMap = new Map();
+            const additionMap = new Map();
+
+            character.attributes?.forEach(attribute => {
+                attributeMap.set(attribute.field, attribute);
             });
 
-            const additionMap = {};
-            character["additions"].forEach(addition => {
-                additionMap[addition.field] = addition;
+            character.additions?.forEach(addition => {
+                additionMap.set(addition.field, addition);
             });
 
             const combinedAttributes = [];
 
-            // Gabungkan atribut dan tambahan
-            character["attributes"].forEach(attribute => {
-                const addition = additionMap[attribute.field];
-                const totalValue =
-                    parseFloat(attribute.display || "0") + (addition ? parseFloat(addition.display || "0") : 0);
+            character.attributes?.forEach(attribute => {
+                const addition = additionMap.get(attribute.field);
+                const attributeDisplay = parseFloat(attribute.display || "0");
+                const additionDisplay = addition ? parseFloat(addition.display || "0") : 0;
+                const totalValue = attributeDisplay + additionDisplay;
 
                 combinedAttributes.push({
                     name: attribute.name,
@@ -50,15 +63,13 @@ export async function GET(req, props) {
                     display: totalValue.toFixed(attribute.percent ? 1 : 0) + (attribute.percent ? "%" : "")
                 });
 
-                // Tandai tambahan sebagai telah diproses
                 if (addition) {
-                    additionMap[attribute.field] = null;
+                    additionMap.set(attribute.field, null);
                 }
             });
 
-            // Proses tambahan yang tidak diproses
-            character["additions"].forEach(addition => {
-                if (additionMap[addition.field] !== null) {
+            character.additions?.forEach(addition => {
+                if (additionMap.get(addition.field) !== null) {
                     combinedAttributes.push({
                         name: addition.name,
                         icon: addition.icon,
@@ -68,21 +79,20 @@ export async function GET(req, props) {
                 }
             });
 
-            const set_map = new Map();
+            const setMap = new Map();
 
-            for (const relic_set of character["relic_sets"]) {
+            character.relic_sets?.forEach(relic_set => {
                 const { id, num } = relic_set;
-                if (!set_map.has(id) || num > set_map.get(id).num) {
-                    set_map.set(id, relic_set);
+                if (!setMap.has(id) || num > setMap.get(id).num) {
+                    setMap.set(id, relic_set);
                 }
-            }
+            });
 
-            character["relic_sets"] = Array.from(set_map.values());
-
+            character.relic_sets = Array.from(setMap.values());
             character.property = combinedAttributes;
 
-            for (const relic of character["relics"]) {
-                for (const sub_affix of relic["sub_affix"]) {
+            character.relics?.forEach(relic => {
+                relic.sub_affix?.forEach(sub_affix => {
                     const dist = [];
                     const { count, step } = sub_affix;
                     for (let d = 0; d < count; d++) {
@@ -94,13 +104,14 @@ export async function GET(req, props) {
                             dist[d] = 1;
                         }
                     }
-                    sub_affix["dist"] = dist;
-                }
-            }
+                    sub_affix.dist = dist;
+                });
+            });
         }
 
         return NextResponse.json(data);
     } catch (error) {
+        console.error(error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
