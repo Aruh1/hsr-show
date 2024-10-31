@@ -7,10 +7,6 @@ export async function GET(req, props) {
         const { searchParams } = new URL(req.url);
         const lang = searchParams.get("lang") || "en";
 
-        if (!uid) {
-            return NextResponse.json({ error: "Missing UID parameter." }, { status: 400 });
-        }
-
         if (!/^\d+$/.test(uid) || uid.length > 10) {
             return NextResponse.json(
                 { error: "Invalid UID. Must be an integer and up to 10 characters long." },
@@ -21,7 +17,6 @@ export async function GET(req, props) {
         const apiUrl = `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}`;
         const res = await fetch(apiUrl);
         if (!res.ok) {
-            console.error("Fetch request failed:", res.status, res.statusText);
             return NextResponse.json(
                 { error: `Failed to fetch data: ${res.status} ${res.statusText}` },
                 { status: res.status }
@@ -109,7 +104,14 @@ export async function GET(req, props) {
             });
         }
 
-        return NextResponse.json(data);
+        const response = {
+            status: `${res.status} ${res.statusText}`,
+            ...data,
+            timestamp: new Date().toISOString(),
+            powered: `API mihomo: https://api.mihomo.me/`
+        };
+
+        return NextResponse.json(response);
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

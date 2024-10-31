@@ -27,7 +27,6 @@ const Profile = () => {
     const params = useParams();
     const uid = params.uid;
     const nickname = data?.player.nickname;
-    const times = new Date().toLocaleTimeString();
 
     useEffect(() => {
         setHideUID(JSON.parse(localStorage.getItem("hideUID")));
@@ -185,7 +184,9 @@ const Profile = () => {
                                 </div>
                                 <div className="flex flex-row flex-wrap justify-between gap-x-4">
                                     <span className="text-xl">Locale Updated: </span>
-                                    <span className="text-xl">{times}</span>
+                                    <span className="text-xl">
+                                        {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString() : ""}
+                                    </span>
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-2">
@@ -219,15 +220,17 @@ const Profile = () => {
                                     )}
                                     <div
                                         className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
-                                        onClick={() => router.push(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`)}
+                                        onClick={() =>
+                                            router.push(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`)
+                                        }
                                     >
                                         <Image
                                             src={asset_url + "icon/sign/Detail.png"}
-                                            alt="API Infomation"
+                                            alt="API Information"
                                             width={24}
                                             height={24}
                                         />
-                                        <span>API Infomation</span>
+                                        <span>API Information</span>
                                     </div>
                                     <div
                                         className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
