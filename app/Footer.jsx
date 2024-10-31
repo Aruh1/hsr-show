@@ -18,16 +18,34 @@ const Footer = () => {
                     copyrights of miHoYo.
                 </span>
                 <div className="mb-1 flex flex-row items-center justify-center space-x-2">
-                    <Link href="https://discord.gg/qefR5pXp8z" aria-label="Discord" rel="noreferrer" target="_blank">
+                    <Link
+                        href="https://discord.gg/qefR5pXp8z"
+                        aria-label="Discord"
+                        rel="noreferrer"
+                        target="_blank"
+                        legacyBehavior
+                    >
                         <BsDiscord className="cursor-pointer transition-transform hover:-translate-y-1" size={30} />
                     </Link>
-                    <Link href="https://github.com/Aruh1/hsr-show" aria-label="GitHub" rel="noreferrer" target="_blank">
+                    <Link
+                        href="https://github.com/Aruh1/hsr-show"
+                        aria-label="GitHub"
+                        rel="noreferrer"
+                        target="_blank"
+                        legacyBehavior
+                    >
                         <AiOutlineGithub
                             className="cursor-pointer transition-transform hover:-translate-y-1"
                             size={30}
                         />
                     </Link>
-                    <Link href="https://ko-fi.com/pololer" aria-label="Kofi" rel="noreferrer" target="_blank">
+                    <Link
+                        href="https://ko-fi.com/pololer"
+                        aria-label="Kofi"
+                        rel="noreferrer"
+                        target="_blank"
+                        legacyBehavior
+                    >
                         <SiKofi className="cursor-pointer transition-transform hover:-translate-y-1" size={30} />
                     </Link>
                     <Link
@@ -35,6 +53,7 @@ const Footer = () => {
                         aria-label="Trakteer"
                         rel="noopener noreferrer"
                         target="_blank"
+                        legacyBehavior
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

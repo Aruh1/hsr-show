@@ -88,7 +88,7 @@ export default function Search() {
                     <Link href={`/u/${savedUID}`} className="flex gap-2">
                         <Image
                             src="https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/icon/sign/SettingsAccount.png"
-                            alt="Example Icon"
+                            alt="Icon Linked Profile"
                             width={24}
                             height={24}
                         />
