@@ -27,6 +27,9 @@ const Profile = () => {
     const params = useParams();
     const uid = params.uid;
     const nickname = data?.player.nickname;
+    const [timeLeft, setTimeLeft] = useState(null);
+    const [targetTimestamp, setTargetTimestamp] = useState(null);
+
 
     useEffect(() => {
         setHideUID(JSON.parse(localStorage.getItem("hideUID")));
@@ -43,6 +46,49 @@ const Profile = () => {
             toastId: "success-uid-linked"
         });
     }, [uid]);
+
+    const fetchTimestamp = async () => {
+        try {
+          const response = await fetch(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`);
+          const data = await response.json();
+          if (data?.timestamp) {
+            setTargetTimestamp(new Date(data?.timestamp));
+          }
+          console.log(response)
+        } catch (error) {
+          console.error('Error fetching timestamp:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchTimestamp();
+    
+        const refreshInterval = setInterval(() => {
+          fetchTimestamp();
+        }, 10 * 60 * 1000); // 1 menit
+    
+        return () => clearInterval(refreshInterval);
+      }, []);
+      useEffect(() => {
+        if (!targetTimestamp) return;
+    
+        const countdownInterval = setInterval(() => {
+          const now = new Date();
+          const difference = targetTimestamp - now;
+    
+          if (difference <= 0) {
+            clearInterval(countdownInterval);
+            setTimeLeft('Countdown ended');
+          } else {
+            const minutes = Math.floor((difference / (1000 * 60)) % 60);
+            const seconds = Math.floor((difference / 1000) % 60);
+            setTimeLeft(`${String(minutes).padStart(2, '0')}m : ${String(seconds).padStart(2, '0')}s`);
+          }
+        }, 1000);
+    
+        return () => clearInterval(countdownInterval);
+      }, [targetTimestamp]);
+    
 
     useEffect(() => {
         const fetchData = async () => {
@@ -162,6 +208,7 @@ const Profile = () => {
                                 className="rounded-full border-2 border-stone-300 bg-stone-500"
                             />
                             <span className="text-3xl">{nickname}</span>
+                            <span className="text-2xl">UID: {uid}</span>
                             <div className="flex w-full flex-row items-center justify-evenly gap-2 text-center">
                                 <div className="flex flex-col">
                                     <span className="text-2xl text-neutral-400">Trailblaze Level</span>
@@ -190,7 +237,7 @@ const Profile = () => {
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                <span className="text-2xl">UID {data?.player.uid}</span>
+                                <span className="text-2xl">Refreshing in {timeLeft !== null ? timeLeft : 'Loading...'}</span>
                                 <div className="flex flex-row flex-wrap justify-center gap-4">
                                     <div
                                         className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
