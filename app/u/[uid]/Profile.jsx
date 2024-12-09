@@ -180,10 +180,10 @@ const Profile = () => {
                                 className="rounded-full border-2 border-stone-300 bg-stone-500"
                             />
                             <span className="text-3xl">{nickname}</span>
-                            <span className="text-2xl text-slate-300">{signature}</span>
+                            <span className="text-2xl text-gray-300">{signature}</span>
                             <div className="flex w-full flex-row items-center justify-evenly gap-2 text-center">
                                 <div className="flex flex-col">
-                                    <span className="text-2xl text-gray-400">Trailblaze Level</span>
+                                    <span className="text-2xl text-neutral-400">Trailblaze Level</span>
                                     <span className="text-xl">{data?.player.level}</span>
                                 </div>
                                 <div className="flex flex-col">
