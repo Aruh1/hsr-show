@@ -1,119 +1,139 @@
 import { NextResponse } from "next/server";
 
-export async function GET(req, props) {
-    try {
-        const params = await props.params;
-        const { uid } = params;
-        const { searchParams } = new URL(req.url);
-        const lang = searchParams.get("lang") || "en";
+// Input validation function
+function validateUID(uid) {
+    if (!/^\d{1,10}$/.test(uid)) {
+        throw new Error("Invalid UID. Must be a 1-10 digit integer.");
+    }
+    return uid;
+}
 
-        if (!/^\d+$/.test(uid) || uid.length > 10) {
+export async function GET(req, context) {
+    try {
+        // Await params as per Next.js requirements
+        const params = await context.params;
+
+        // Validate inputs
+        const uid = validateUID(params.uid);
+        const lang = new URL(req.url).searchParams.get("lang") || "en";
+
+        // Use a generic API error handler to reduce code duplication
+        const fetchWithErrorHandling = async url => {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+            return response.json();
+        };
+
+        // Concurrent fetches for better performance
+        const [data, infodata] = await Promise.all([
+            fetchWithErrorHandling(`https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}`),
+            fetchWithErrorHandling(`https://api.mihomo.me/sr_info/${uid}?lang=${lang}`)
+        ]);
+
+        // Early validation
+        if (!data.characters?.length) {
+            return NextResponse.json({ error: "No characters found" }, { status: 404 });
+        }
+
+        // Memoize and optimize character processing
+        const processedCharacters = data.characters.map(processCharacter);
+
+        // Update data with processed characters
+        data.characters = processedCharacters;
+
+        // Construct enhanced response
+        return NextResponse.json({
+            status: 200,
+            ...data,
+            ...infodata,
+            timestamp: new Date().toISOString(),
+            powered: "API mihomo: https://api.mihomo.me/"
+        });
+    } catch (error) {
+        // Centralized error handling
+        console.error(error);
+
+        // Differentiate between validation and other errors
+        if (error.message.includes("Invalid UID")) {
             return NextResponse.json(
-                { error: "Invalid UID. Must be an integer and up to 10 characters long." },
+                {
+                    error: error.message
+                },
                 { status: 400 }
             );
         }
 
-        const apiUrl = `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}`;
-        const res = await fetch(apiUrl);
-        if (!res.ok) {
-            return NextResponse.json(
-                { error: `Failed to fetch data: ${res.status} ${res.statusText}` },
-                { status: res.status }
-            );
-        }
-
-        const data = await res.json();
-
-        if (!data.characters) {
-            return NextResponse.json({ error: "No characters found in data." }, { status: 404 });
-        }
-
-        for (const character of data.characters) {
-            const attributeMap = new Map();
-            const additionMap = new Map();
-
-            character.attributes?.forEach(attribute => {
-                attributeMap.set(attribute.field, attribute);
-            });
-
-            character.additions?.forEach(addition => {
-                additionMap.set(addition.field, addition);
-            });
-
-            const combinedAttributes = [];
-
-            character.attributes?.forEach(attribute => {
-                const addition = additionMap.get(attribute.field);
-                const attributeDisplay = parseFloat(attribute.display || "0");
-                const additionDisplay = addition ? parseFloat(addition.display || "0") : 0;
-                const totalValue = attributeDisplay + additionDisplay;
-
-                combinedAttributes.push({
-                    name: attribute.name,
-                    icon: attribute.icon,
-                    base: attribute.display || 0,
-                    addition: addition ? addition.value || 0 : 0,
-                    value: addition ? attribute.value + addition.value : attribute.value,
-                    display: totalValue.toFixed(attribute.percent ? 1 : 0) + (attribute.percent ? "%" : "")
-                });
-
-                if (addition) {
-                    additionMap.set(attribute.field, null);
-                }
-            });
-
-            character.additions?.forEach(addition => {
-                if (additionMap.get(addition.field) !== null) {
-                    combinedAttributes.push({
-                        name: addition.name,
-                        icon: addition.icon,
-                        value: addition.value,
-                        display: addition.display
-                    });
-                }
-            });
-
-            const setMap = new Map();
-
-            character.relic_sets?.forEach(relic_set => {
-                const { id, num } = relic_set;
-                if (!setMap.has(id) || num > setMap.get(id).num) {
-                    setMap.set(id, relic_set);
-                }
-            });
-
-            character.relic_sets = Array.from(setMap.values());
-            character.property = combinedAttributes;
-
-            character.relics?.forEach(relic => {
-                relic.sub_affix?.forEach(sub_affix => {
-                    const dist = [];
-                    const { count, step } = sub_affix;
-                    for (let d = 0; d < count; d++) {
-                        if (d < step - count) {
-                            dist[d] = 2;
-                        } else if (!step) {
-                            dist[d] = 0;
-                        } else {
-                            dist[d] = 1;
-                        }
-                    }
-                    sub_affix.dist = dist;
-                });
-            });
-        }
-
-        const response = {
-            status: `${res.status} ${res.statusText}`,
-            ...data,
-            timestamp: new Date().toISOString(),
-            powered: `API mihomo: https://api.mihomo.me/`
-        };
-
-        return NextResponse.json(response);
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            {
+                error: error.message || "Internal Server Error"
+            },
+            { status: 500 }
+        );
     }
+}
+
+// Separate function for character processing to improve readability and potential reuse
+function processCharacter(character) {
+    // Efficient attribute and addition mapping
+    const attributeMap = new Map((character.attributes || []).map(attr => [attr.field, attr]));
+    const additionMap = new Map((character.additions || []).map(add => [add.field, add]));
+
+    // Optimize attribute combination
+    const combinedAttributes = [
+        // Process base attributes with additions
+        ...(character.attributes || []).map(attribute => {
+            const addition = additionMap.get(attribute.field);
+            const baseValue = parseFloat(attribute.display || "0");
+            const additionValue = addition ? parseFloat(addition.display || "0") : 0;
+            const totalValue = baseValue + additionValue;
+
+            // Remove processed additions
+            if (addition) {
+                additionMap.delete(attribute.field);
+            }
+
+            return {
+                name: attribute.name,
+                icon: attribute.icon,
+                base: baseValue,
+                addition: addition?.value || 0,
+                value: addition ? attribute.value + addition.value : attribute.value,
+                display: totalValue.toFixed(attribute.percent ? 1 : 0) + (attribute.percent ? "%" : "")
+            };
+        }),
+        // Add remaining unmatched additions
+        ...[...additionMap.values()].map(addition => ({
+            name: addition.name,
+            icon: addition.icon,
+            value: addition.value,
+            display: addition.display
+        }))
+    ];
+
+    // Efficient relic set processing with Set to remove duplicates
+    const relic_sets = Array.from(new Set((character.relic_sets || []).map(set => set.id))).map(id =>
+        (character.relic_sets || []).find(set => set.id === id)
+    );
+
+    // Enhanced relic sub-affix processing
+    const relics = (character.relics || []).map(relic => ({
+        ...relic,
+        sub_affix: (relic.sub_affix || []).map(sub_affix => {
+            const { count, step } = sub_affix;
+            // More concise distribution calculation
+            const dist = Array(count)
+                .fill(2)
+                .map((_, index) => (index < step - count ? 2 : !step ? 0 : 1));
+            return { ...sub_affix, dist };
+        })
+    }));
+
+    return {
+        ...character,
+        property: combinedAttributes,
+        relic_sets,
+        relics
+    };
 }

@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { BsPcDisplay, BsAndroid2, BsApple, BsPlaystation } from "react-icons/bs";
 import Image from "next/image";
 import CharacterCard from "./CharacterCard";
 import html2canvas from "html2canvas";
@@ -27,6 +28,8 @@ const Profile = () => {
     const params = useParams();
     const uid = params.uid;
     const nickname = data?.player.nickname;
+    const signature = data?.player.signature;
+    const platform = data?.detailInfo.platform;
 
     useEffect(() => {
         setHideUID(JSON.parse(localStorage.getItem("hideUID")));
@@ -123,6 +126,21 @@ const Profile = () => {
         [savedBuilds]
     );
 
+    const getPlatformIcon = platform => {
+        switch (platform) {
+            case "PC":
+                return <BsPcDisplay />;
+            case "ANDROID":
+                return <BsAndroid2 />;
+            case "IOS":
+                return <BsApple />;
+            case "PS5":
+                return <BsPlaystation />;
+            default:
+                return null;
+        }
+    };
+
     const ref = useRef(null);
     const saveImage = useCallback(
         (name, scale) => {
@@ -162,9 +180,10 @@ const Profile = () => {
                                 className="rounded-full border-2 border-stone-300 bg-stone-500"
                             />
                             <span className="text-3xl">{nickname}</span>
+                            <span className="text-2xl text-slate-300">{signature}</span>
                             <div className="flex w-full flex-row items-center justify-evenly gap-2 text-center">
                                 <div className="flex flex-col">
-                                    <span className="text-2xl text-neutral-400">Trailblaze Level</span>
+                                    <span className="text-2xl text-gray-400">Trailblaze Level</span>
                                     <span className="text-xl">{data?.player.level}</span>
                                 </div>
                                 <div className="flex flex-col">
@@ -181,6 +200,10 @@ const Profile = () => {
                                 <div className="flex flex-row flex-wrap justify-between gap-x-4">
                                     <span className="text-xl">Achievements Unlocked: </span>
                                     <span className="text-xl">{data?.player.space_info.achievement_count}</span>
+                                </div>
+                                <div className="flex flex-row flex-wrap justify-between gap-x-4">
+                                    <span className="text-xl">Platform: </span>
+                                    <span className="text-xl">{getPlatformIcon(platform)}</span>
                                 </div>
                                 <div className="flex flex-row flex-wrap justify-between gap-x-4">
                                     <span className="text-xl">Locale Updated: </span>
