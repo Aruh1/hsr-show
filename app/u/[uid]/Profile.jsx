@@ -54,7 +54,8 @@ const Profile = () => {
 
             for (let attempt = 0; attempt < maxRetries; attempt++) {
                 try {
-                    const res = await fetch(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`, {
+                    const lang = localStorage.getItem("lang") || "en";
+                    const res = await fetch(`/api/u/${uid}?lang=${lang}`, {
                         next: { revalidate: 60 }
                     });
 
