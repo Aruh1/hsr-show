@@ -49,34 +49,52 @@ const Profile = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const res = await fetch(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`, {
-                    next: { revalidate: 60 }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setData(data);
-                } else {
-                    toast.error(
-                        <div>
-                            Error fetching data!
-                            <br />
-                            Try again later or join our discord server for help.
-                        </div>,
-                        {
-                            toastId: "error-fetching-data"
-                        }
-                    );
-                    setTimeout(() => {
-                        router.push("/");
-                    }, 2000);
+            const maxRetries = 3;
+            const baseDelay = 1000; // 1 second
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const res = await fetch(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`, {
+                        next: { revalidate: 60 }
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        setData(data);
+                        return; // Successful fetch, exit the function
+                    }
+
+                    // If not ok, wait before retrying
+                    if (attempt < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, attempt)));
+                    }
+                } catch (error) {
+                    console.error(`Fetch attempt ${attempt + 1} failed:`, error);
+
+                    // Wait before retrying, with exponential backoff
+                    if (attempt < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, attempt)));
+                    }
                 }
-            } catch (error) {
-                console.error("Error fetching data:", error);
             }
+
+            // If all retries fail
+            toast.error(
+                <div>
+                    Error fetching data after multiple attempts!
+                    <br />
+                    Try again later or join our discord server for help.
+                </div>,
+                {
+                    toastId: "error-fetching-data"
+                }
+            );
+            setTimeout(() => {
+                router.push("/");
+            }, 2000);
         };
         fetchData();
-    }, []);
+    }, [uid, router]);
 
     useEffect(() => {
         if (data) {

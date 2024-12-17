@@ -1,11 +1,67 @@
 import { NextResponse } from "next/server";
 
-// Input validation function
-function validateUID(uid) {
-    if (!/^\d{1,10}$/.test(uid)) {
-        throw new Error("Invalid UID. Must be a 1-10 digit integer.");
+// Retry configuration
+const RETRY_CONFIG = {
+    maxRetries: 3,
+    baseDelay: 1000, // 1 second initial delay
+    backoffFactor: 2, // Exponential backoff
+    jitter: 0.2 // 20% jitter to spread out retry attempts
+};
+
+// Enhanced fetch with retry mechanism
+async function fetchWithRetry(url, options = {}, retryConfig = RETRY_CONFIG) {
+    const { maxRetries, baseDelay, backoffFactor, jitter } = retryConfig;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+
+            // Successful response
+            if (response.ok) {
+                return response;
+            }
+
+            // Non-successful response (400-500 range)
+            if (attempt === maxRetries) {
+                // Last attempt failed
+                console.error(`Fetch failed after ${maxRetries + 1} attempts. Status: ${response.status}`);
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+
+            // Calculate delay with exponential backoff and jitter
+            const delay = calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter);
+            console.warn(`Attempt ${attempt + 1} failed. Retrying in ${delay}ms`);
+
+            // Wait before next attempt
+            await new Promise(resolve => setTimeout(resolve, delay));
+        } catch (error) {
+            // Network errors or other fetch failures
+            if (attempt === maxRetries) {
+                console.error("Fetch failed after maximum retries:", error);
+                throw error;
+            }
+
+            // Calculate delay for network errors
+            const delay = calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter);
+            console.warn(`Network error on attempt ${attempt + 1}. Retrying in ${delay}ms`);
+
+            // Wait before next attempt
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
     }
-    return uid;
+
+    throw new Error("Unexpected error in fetchWithRetry");
+}
+
+// Calculate exponential backoff with jitter
+function calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter) {
+    // Calculate base exponential backoff
+    const calculatedDelay = baseDelay * Math.pow(backoffFactor, attempt);
+
+    // Add jitter to spread out retry attempts
+    const jitterAmount = calculatedDelay * jitter * (Math.random() * 2 - 1);
+
+    return Math.round(calculatedDelay + jitterAmount);
 }
 
 export async function GET(req, context) {
@@ -16,20 +72,20 @@ export async function GET(req, context) {
         // Validate inputs
         const uid = validateUID(params.uid);
         const lang = new URL(req.url).searchParams.get("lang") || "en";
+        const force_update = new URL(req.url).searchParams.get("force_update") || true;
 
-        // Use a generic API error handler to reduce code duplication
+        // Use the new fetchWithRetry for API calls
         const fetchWithErrorHandling = async url => {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
-            }
+            const response = await fetchWithRetry(url);
             return response.json();
         };
 
-        // Concurrent fetches for better performance
+        // Concurrent fetches with retry mechanism
         const [data, infodata] = await Promise.all([
-            fetchWithErrorHandling(`https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}`),
-            fetchWithErrorHandling(`https://api.mihomo.me/sr_info/${uid}?lang=${lang}`)
+            fetchWithErrorHandling(
+                `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}&is_force_update=${force_update}`
+            ),
+            fetchWithErrorHandling(`https://api.mihomo.me/sr_info/${uid}?lang=${lang}&is_force_update=${force_update}`)
         ]);
 
         // Early validation
@@ -74,7 +130,15 @@ export async function GET(req, context) {
     }
 }
 
-// Separate function for character processing to improve readability and potential reuse
+// Input validation function
+function validateUID(uid) {
+    if (!/^\d{1,10}$/.test(uid)) {
+        throw new Error("Invalid UID. Must be a 1-10 digit integer.");
+    }
+    return uid;
+}
+
+// Existing processCharacter function (unchanged from previous implementation)
 function processCharacter(character) {
     // Efficient attribute and addition mapping
     const attributeMap = new Map((character.attributes || []).map(attr => [attr.field, attr]));
