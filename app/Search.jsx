@@ -92,7 +92,7 @@ export default function Search() {
                             width={24}
                             height={24}
                         />
-                        <span>Linked Profile: {localStorage.getItem("uid")}</span>
+                        <span>Linked Profile: {savedUID}</span>
                     </Link>
                 </div>
             )}

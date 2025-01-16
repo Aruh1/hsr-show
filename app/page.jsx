@@ -1,4 +1,5 @@
 import Search from "./Search";
+import ApiStatus from "./ApiStatus";
 
 export default function Home() {
     return (
@@ -8,6 +9,7 @@ export default function Home() {
                 Fetch data from your Trailblazer Profile and display a build card for Honkai: Star Rail
             </span>
             <Search />
+            <ApiStatus />
         </div>
     );
 }
