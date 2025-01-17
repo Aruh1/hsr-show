@@ -190,9 +190,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                                     {skill.level} / {skill.max_level}
                                                 </span>
                                                 <span className="z-10 mt-1.5 truncate text-sm">
-                                                    {character?.path?.id === "Memory" && index === 1
-                                                        ? "Skill"
-                                                        : skill_types.get(skill.id.slice(-2))}
+                                                    {skill_types.get(skill.id.slice(-2))}
                                                 </span>
                                             </div>
                                         </div>
@@ -209,9 +207,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                             {character?.skill_trees[2].level} / {character?.skill_trees[2].max_level}
                                         </span>
                                         <span className="z-10 mt-1.5 truncate text-sm">
-                                            {character?.path?.id === "Memory"
-                                                ? "Talent"
-                                                : skill_types.get(character?.skill_trees[2].id.slice(-2))}
+                                            {skill_types.get(character?.skill_trees[2].id.slice(-2))}
                                         </span>
                                     </div>
                                 </div>
@@ -242,13 +238,15 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                                     <img
                                                         src={asset_url + skill.icon}
                                                         alt="Skill Icon"
-                                                        className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-900"
+                                                        className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
                                                     />
                                                     <span className="black-blur absolute bottom-4 text-sm">
                                                         {skill.level} / {skill.max_level}
                                                     </span>
                                                     <span className="z-10 mt-1.5 truncate text-sm">
-                                                        {index === 0 ? "Skill" : "Talent"}
+                                                        {index === 0
+                                                            ? skill_types.get(character?.skill_trees[1].id.slice(-2))
+                                                            : skill_types.get(character?.skill_trees[3].id.slice(-2))}
                                                     </span>
                                                 </div>
                                             </div>
