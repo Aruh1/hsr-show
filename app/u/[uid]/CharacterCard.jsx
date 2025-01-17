@@ -58,8 +58,10 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
             show && (
                 <div
                     className={`flex items-center justify-center gap-1
-                        ${!["Rogue", "Priest", "Warrior", "Warlock", "Shaman", "Mage"].includes(path) ? "flex-row" : "flex-col"}
+                        ${!["Rogue", "Priest", "Warrior", "Warlock", "Shaman", "Mage", "Memory"].includes(path) ? "flex-row" : "flex-col"}
                         ${path === "Knight" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
+                        ${path === "Memory" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
+                        ${path === "Memory" && icon.anchor === "Point09" ? "flex-col" : ""}
                         ${path === "Knight" && icon.anchor === "Point09" ? "flex-col" : ""}`}
                 >
                     <img
@@ -188,7 +190,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                                     {skill.level} / {skill.max_level}
                                                 </span>
                                                 <span className="z-10 mt-1.5 truncate text-sm">
-                                                    {skill_types.get(skill.id.slice(-2))}
+                                                    {character?.path?.id === "Memory" && index === 1
+                                                        ? "Skill"
+                                                        : skill_types.get(skill.id.slice(-2))}
                                                 </span>
                                             </div>
                                         </div>
@@ -205,7 +209,9 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                             {character?.skill_trees[2].level} / {character?.skill_trees[2].max_level}
                                         </span>
                                         <span className="z-10 mt-1.5 truncate text-sm">
-                                            {skill_types.get(character?.skill_trees[2].id.slice(-2))}
+                                            {character?.path?.id === "Memory"
+                                                ? "Talent"
+                                                : skill_types.get(character?.skill_trees[2].id.slice(-2))}
                                         </span>
                                     </div>
                                 </div>
@@ -228,6 +234,27 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                         </div>
                                     ))}
                                 </div>
+                                {character?.path?.id === "Memory" && (
+                                    <div className="flex h-full w-1/3 flex-col justify-center gap-8">
+                                        {character?.skill_trees.slice(18, 20).map((skill, index) => (
+                                            <div key={skill.id || index} className="flex flex-col items-center">
+                                                <div className="relative flex flex-col items-center">
+                                                    <img
+                                                        src={asset_url + skill.icon}
+                                                        alt="Skill Icon"
+                                                        className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-900"
+                                                    />
+                                                    <span className="black-blur absolute bottom-4 text-sm">
+                                                        {skill.level} / {skill.max_level}
+                                                    </span>
+                                                    <span className="z-10 mt-1.5 truncate text-sm">
+                                                        {index === 0 ? "Skill" : "Talent"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             {!allTraces && (
                                 <div className="flex items-center justify-center">
