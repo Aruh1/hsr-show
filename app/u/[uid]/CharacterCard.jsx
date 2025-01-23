@@ -315,7 +315,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                             {character?.light_cone?.attributes.map((attribute, index) => (
                                                 <div
                                                     key={attribute.id || index}
-                                                    className="black-blur flex flex-row items-center rounded pr-1"
+                                                    className="black-blur flex flex-row items-center rounded-sm pr-1"
                                                 >
                                                     <img
                                                         src={asset_url + attribute.icon}
@@ -342,7 +342,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                             >
                                                 <span className="text-base">{relic_set.name}</span>
                                                 <div>
-                                                    <span className="black-blur flex w-5 justify-center rounded px-1.5 py-0.5">
+                                                    <span className="black-blur flex w-5 justify-center rounded-sm px-1.5 py-0.5">
                                                         {relic_set.num}
                                                     </span>
                                                 </div>
@@ -367,7 +367,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                         <img src={asset_url + stat.icon} alt="Stat Icon" className="h-auto w-10" />
                                         <span>{stat.name}</span>
                                     </div>
-                                    <span className="mx-3 flex-grow rounded border-[1px] border-neutral-300 opacity-50"></span>
+                                    <span className="mx-3 grow rounded-sm border-[1px] border-neutral-300 opacity-50"></span>
                                     <div className="flex cursor-default flex-col text-right">
                                         {stat.icon === "icon/property/IconSpeed.png" ? (
                                             <span>{(stat.value - 0.005).toFixed(1)}</span>
@@ -417,7 +417,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                         />
                                         <span>Energy Regeneration Rate</span>
                                     </div>
-                                    <span className="mx-3 flex-grow rounded border-[1px] border-neutral-300 opacity-50"></span>
+                                    <span className="mx-3 grow rounded-sm border-[1px] border-neutral-300 opacity-50"></span>
                                     <div className="flex flex-col text-right">
                                         <div className="flex flex-row">
                                             <span>100.0%</span>
@@ -437,7 +437,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                         >
                                             <span>{relic_set.name}</span>
                                             <div>
-                                                <span className="black-blur flex w-5 justify-center rounded px-1.5 py-0.5">
+                                                <span className="black-blur flex w-5 justify-center rounded-sm px-1.5 py-0.5">
                                                     {relic_set.num}
                                                 </span>
                                             </div>
@@ -473,7 +473,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                             className="h-auto w-9"
                                         />
                                         <span className="text-base text-[#f1a23c]">{relic.main_affix.display}</span>
-                                        <span className="black-blur rounded px-1 text-xs">+{relic.level}</span>
+                                        <span className="black-blur rounded-sm px-1 text-xs">+{relic.level}</span>
                                     </div>
                                     <div className="h-[80px] border-l-[1px] opacity-50"></div>
                                     <div

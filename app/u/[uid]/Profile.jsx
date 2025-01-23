@@ -235,7 +235,7 @@ const Profile = () => {
                                 <span className="text-2xl">UID {data?.player.uid}</span>
                                 <div className="flex flex-row flex-wrap justify-center gap-4">
                                     <div
-                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                         onClick={() => router.push("/")}
                                     >
                                         <Image
@@ -248,7 +248,7 @@ const Profile = () => {
                                     </div>
                                     {savedUID !== uid && (
                                         <div
-                                            className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                            className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                             onClick={linkUID}
                                         >
                                             <Image
@@ -261,7 +261,7 @@ const Profile = () => {
                                         </div>
                                     )}
                                     <div
-                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                         onClick={() =>
                                             router.push(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`)
                                         }
@@ -275,7 +275,7 @@ const Profile = () => {
                                         <span>API Information</span>
                                     </div>
                                     <div
-                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                         onClick={() => {
                                             setShowSavedBuilds(!showSavedBuilds);
                                             setSelected(null);
@@ -401,7 +401,7 @@ const Profile = () => {
 
                                 <div className="flex w-screen flex-col items-center justify-center">
                                     <div
-                                        className="my-2 flex cursor-pointer flex-row justify-center gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                        className="my-2 flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                         onClick={() => saveImage(character.name, `${customImage ? 1 : 1.5}`)}
                                     >
                                         <Image
@@ -414,7 +414,7 @@ const Profile = () => {
                                     </div>
                                     <div className="mx-3 my-2 flex flex-row flex-wrap items-center justify-center gap-x-4 gap-y-2">
                                         <div>
-                                            <label className="h-[30px] cursor-pointer gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
+                                            <label className="h-[30px] cursor-pointer gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
                                                 Custom Image
                                                 <input
                                                     type="file"
@@ -476,14 +476,14 @@ const Profile = () => {
                                             type="text"
                                             name="buildName"
                                             onChange={e => setBuildName(e.target.value)}
-                                            className="relative m-0 -mr-0.5 flex rounded-l border border-neutral-300 bg-clip-padding px-3 text-base leading-[1.6] text-neutral-600 outline-none"
+                                            className="relative m-0 -mr-0.5 flex rounded-l border border-neutral-300 bg-clip-padding px-3 text-base leading-[1.6] text-neutral-600 outline-hidden"
                                             value={buildName}
                                             placeholder="Build Name"
                                             aria-label="Build Name"
                                             maxLength={30}
                                         />
                                         <div
-                                            className="h-[30px] cursor-pointer gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                            className="h-[30px] cursor-pointer gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
                                             onClick={saveBuild}
                                         >
                                             Save Build

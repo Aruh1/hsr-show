@@ -91,7 +91,7 @@ export default function ApiStatus() {
                 {Object.entries(apiStatuses).map(([server, status]) => (
                     <div
                         key={server}
-                        className="flex flex-col items-center rounded-lg border border-gray-200/50 bg-transparent p-3 backdrop-blur-sm hover:border-gray-300/50 transition-colors duration-200"
+                        className="flex flex-col items-center rounded-lg border border-gray-200/50 bg-transparent p-3 backdrop-blur-xs hover:border-gray-300/50 transition-colors duration-200"
                     >
                         <div className="text-sm font-medium">{server}</div>
                         <div className="mt-2">
