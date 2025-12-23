@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: "HSR Show",
     description: "View and create a character showcase card for Honkai: Star Rail",
     icons: {
-        icon: "/herta-kurukuru.gif"
+        icon: "/evernight-goyang.gif"
     },
     keywords: ["Honkai Star Rail", "HSR", "HSR Showcase", "HSR Build Card"],
     alternates: {
