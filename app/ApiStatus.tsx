@@ -2,7 +2,19 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-const SERVER_ENDPOINTS = {
+interface ServerEndpoint {
+    url: string;
+}
+
+interface ServerStatus {
+    isLoading: boolean;
+    isConnected: boolean;
+    error: string | null;
+}
+
+type ApiStatuses = Record<string, ServerStatus>;
+
+const SERVER_ENDPOINTS: Record<string, ServerEndpoint> = {
     "Official-USA": { url: "/api/u/600000006" },
     "GF-CN": { url: "/api/u/100000009" },
     "Official-CHT": { url: "/api/u/900000001" },
@@ -19,17 +31,17 @@ const RETRY_CONFIG = {
 };
 
 export default function ApiStatus() {
-    const [apiStatuses, setApiStatuses] = useState(() =>
+    const [apiStatuses, setApiStatuses] = useState<ApiStatuses>(() =>
         Object.keys(SERVER_ENDPOINTS).reduce(
             (acc, server) => ({
                 ...acc,
                 [server]: { isLoading: false, isConnected: false, error: null }
             }),
-            {}
+            {} as ApiStatuses
         )
     );
 
-    const fetchWithRetry = useCallback(async (url, server) => {
+    const fetchWithRetry = useCallback(async (url: string, server: string) => {
         const { maxRetries, baseDelay, backoffFactor, jitter } = RETRY_CONFIG;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -53,7 +65,7 @@ export default function ApiStatus() {
                 }
 
                 throw new Error("API request failed");
-            } catch (error) {
+            } catch {
                 if (attempt === maxRetries) {
                     setApiStatuses(prev => ({
                         ...prev,

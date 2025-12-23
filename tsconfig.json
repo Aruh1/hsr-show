@@ -18,7 +18,11 @@
                 "name": "next"
             }
         ],
-        "target": "ES2017"
+        "target": "ES2017",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./*"]
+        }
     },
     "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx", ".next/dev/types/**/*.ts"],
     "exclude": ["node_modules"]

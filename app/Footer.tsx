@@ -58,7 +58,7 @@ const Footer = () => {
                             fill="currentColor"
                             width={26}
                             height={26}
-                            title="Trakteer"
+                            aria-label="Trakteer"
                         >
                             <rect x="7" y="8" width="10" height="12" rx="2" ry="2" />
                             <circle cx="12" cy="5" r="1.5" />

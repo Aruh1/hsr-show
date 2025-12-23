@@ -2,14 +2,15 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import Footer from "./Footer";
 import { Outfit } from "next/font/google";
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
 const outfit = Outfit({
     subsets: ["latin"],
-    // src: '../public/zh-cn.ttf',
     variable: "--font-outfit"
 });
 
-export const metadata = {
+export const metadata: Metadata = {
     metadataBase: new URL("https://hsr.pololer.my.id"),
     title: "HSR Show",
     description: "View and create a character showcase card for Honkai: Star Rail",
@@ -39,14 +40,18 @@ export const metadata = {
                 alt: "HSR Showcase"
             }
         ],
-        site_name: "HSR Showcase"
+        siteName: "HSR Showcase"
     },
     verification: {
         google: process.env.GOOGLE_VERIFICATION
     }
 };
 
-export default function RootLayout({ children }) {
+interface RootLayoutProps {
+    children: ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
     return (
         <html lang="en" className={outfit.variable}>
             <body className="no-scrollbar bg-linear-to-br from-[#0a0c22] via-[#11132a] to-[#2b3057] bg-fixed font-semibold text-white">

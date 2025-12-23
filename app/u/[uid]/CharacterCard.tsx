@@ -1,20 +1,51 @@
 import { AiFillLock } from "react-icons/ai";
+import type { Character, SkillTree } from "@/types";
 
-const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, substatDistribution, allTraces }) => {
+interface CharacterCardProps {
+    character: Character;
+    uid: string;
+    nickname: string | undefined;
+    hideUID: boolean;
+    blur: boolean;
+    customImage: string | null;
+    substatDistribution: boolean;
+    allTraces: boolean;
+}
+
+interface IconMap {
+    [key: string]: SkillTree[];
+}
+
+interface TraceTreeProps {
+    iconData: SkillTree;
+    iconMap: IconMap;
+    path: string;
+}
+
+const CharacterCard = ({
+    character,
+    uid,
+    nickname,
+    hideUID,
+    blur,
+    customImage,
+    substatDistribution,
+    allTraces
+}: CharacterCardProps) => {
     const asset_url = "https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/";
-    const roman_num = {
+    const roman_num: Record<number, string> = {
         1: "I",
         2: "II",
         3: "III",
         4: "IV",
         5: "V"
     };
-    const skill_types = new Map();
+    const skill_types = new Map<string, string>();
     character.skills.forEach(skill => {
         skill_types.set(skill.id.slice(-2), skill.type_text);
     });
 
-    const iconMap = character.skill_trees.reduce((map, icon) => {
+    const iconMap: IconMap = character.skill_trees.reduce((map: IconMap, icon) => {
         if (icon.parent !== null) {
             if (!map[icon.parent]) {
                 map[icon.parent] = [];
@@ -42,7 +73,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
         );
     };
 
-    const TraceTree = ({ iconData, iconMap, path }) => {
+    const TraceTree = ({ iconData, iconMap, path }: TraceTreeProps) => {
         const icon = iconData;
         const children = iconMap[icon.id];
         const iconStyle = icon.icon.startsWith("icon/skill/")
@@ -111,7 +142,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                         <div className="flex flex-col">
                             {character?.rank_icons.slice(0, character?.rank).map((rank_icon, index) => (
                                 <div
-                                    key={rank_icon.id || index}
+                                    key={index}
                                     className="relative my-1 flex rounded-full border-2 border-neutral-300 bg-neutral-800"
                                 >
                                     <img src={asset_url + rank_icon} alt="Rank Icon" className="h-auto w-10" />
@@ -121,7 +152,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                         <div className="flex flex-col">
                             {character?.rank_icons.slice(character?.rank, 6).map((rank_icon, index) => (
                                 <div
-                                    key={rank_icon.id || index}
+                                    key={index}
                                     className="relative my-1 flex rounded-full border-2 border-neutral-500 bg-neutral-800"
                                 >
                                     <img
@@ -257,12 +288,11 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                             {!allTraces && (
                                 <div className="flex items-center justify-center">
                                     <div className={`flex w-full flex-row justify-evenly`}>
-                                        {majorTraces.map((icon, index) => (
+                                        {majorTraces.map(icon => (
                                             <TraceTree
                                                 key={icon.id}
                                                 iconData={icon}
                                                 iconMap={iconMap}
-                                                index={index}
                                                 path={character.path.id}
                                             />
                                         ))}
@@ -314,7 +344,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                         <div className="flex flex-row gap-1.5">
                                             {character?.light_cone?.attributes.map((attribute, index) => (
                                                 <div
-                                                    key={attribute.id || index}
+                                                    key={`lc-attr-${index}`}
                                                     className="black-blur flex flex-row items-center rounded-sm pr-1"
                                                 >
                                                     <img
@@ -362,7 +392,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
               ${!allTraces ? "h-[500px]" : "h-[650px]"}`}
                         >
                             {character?.property.map((stat, index) => (
-                                <div key={stat.id || index} className="flex flex-row items-center justify-between">
+                                <div key={`stat-${index}`} className="flex flex-row items-center justify-between">
                                     <div className="flex flex-row items-center">
                                         <img src={asset_url + stat.icon} alt="Stat Icon" className="h-auto w-10" />
                                         <span>{stat.name}</span>
@@ -381,7 +411,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                                 <span className="text-xs">
                                                     {stat.icon === "icon/property/IconSpeed.png" ? (
                                                         <>
-                                                            <span>{parseFloat(stat.base).toFixed(1)}</span>
+                                                            <span>{parseFloat(String(stat.base)).toFixed(1)}</span>
                                                             <span className="text-blue-300">
                                                                 {" "}
                                                                 +{(stat.addition - 0.005).toFixed(1)}
@@ -499,7 +529,7 @@ const CharacterCard = ({ character, uid, nickname, hideUID, blur, customImage, s
                                                     <div className="flex w-full flex-row justify-evenly">
                                                         {sub_affix?.dist?.map((step, index) => (
                                                             <div key={index} className="-mt-3 text-sm text-blue-300">
-                                                                {step == 0 ? "." : step == "1" ? ".." : "..."}
+                                                                {step === 0 ? "." : step === 1 ? ".." : "..."}
                                                             </div>
                                                         ))}
                                                     </div>

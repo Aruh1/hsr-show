@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
 import { BsPcDisplay, BsAndroid2, BsApple, BsPlaystation } from "react-icons/bs";
 import Image from "next/image";
 import CharacterCard from "./CharacterCard";
@@ -9,34 +9,35 @@ import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import Loading from "./loading";
+import type { ProfileData, Character, SavedBuild } from "@/types";
 
 const Profile = () => {
     const router = useRouter();
     const asset_url = "https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/";
-    const [data, setData] = useState(null);
-    const [character, setCharacter] = useState(null);
-    const [selected, setSelected] = useState(0);
+    const [data, setData] = useState<ProfileData | null>(null);
+    const [character, setCharacter] = useState<Character | null>(null);
+    const [selected, setSelected] = useState<number | null>(0);
     const [hideUID, setHideUID] = useState(false);
     const [blur, setBlur] = useState(false);
     const [savedUID, setSavedUID] = useState("");
-    const [savedBuilds, setSavedBuilds] = useState([]);
+    const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>([]);
     const [buildName, setBuildName] = useState("");
     const [showSavedBuilds, setShowSavedBuilds] = useState(false);
-    const [customImage, setCustomImage] = useState(null);
+    const [customImage, setCustomImage] = useState<string | null>(null);
     const [substatDistribution, setSubstatDistribution] = useState(false);
     const [allTraces, setAllTraces] = useState(false);
     const params = useParams();
-    const uid = params.uid;
+    const uid = params.uid as string;
     const nickname = data?.player.nickname;
     const signature = data?.player.signature;
-    const platform = data?.detailInfo.platform;
+    const platform = data?.detailInfo?.platform;
 
     useEffect(() => {
-        setHideUID(JSON.parse(localStorage.getItem("hideUID")));
-        setBlur(JSON.parse(localStorage.getItem("backgroundBlur")));
-        setSubstatDistribution(JSON.parse(localStorage.getItem("substatDistribution")));
-        setAllTraces(JSON.parse(localStorage.getItem("allTraces")));
-        setSavedUID(localStorage.getItem("uid"));
+        setHideUID(JSON.parse(localStorage.getItem("hideUID") || "false"));
+        setBlur(JSON.parse(localStorage.getItem("backgroundBlur") || "false"));
+        setSubstatDistribution(JSON.parse(localStorage.getItem("substatDistribution") || "false"));
+        setAllTraces(JSON.parse(localStorage.getItem("allTraces") || "false"));
+        setSavedUID(localStorage.getItem("uid") || "");
     }, []);
 
     const linkUID = useCallback(() => {
@@ -134,8 +135,8 @@ const Profile = () => {
     }, [character, buildName, savedBuilds]);
 
     const deleteBuild = useCallback(
-        index => {
-            const newBuilds = savedBuilds.filter((build, i) => i !== index);
+        (index: number) => {
+            const newBuilds = savedBuilds.filter((_, i) => i !== index);
             localStorage.setItem("savedBuilds", JSON.stringify(newBuilds));
             setSavedBuilds(newBuilds);
             toast.success("Build deleted!", {
@@ -145,7 +146,7 @@ const Profile = () => {
         [savedBuilds]
     );
 
-    const getPlatformIcon = platform => {
+    const getPlatformIcon = (platform: string | undefined) => {
         switch (platform) {
             case "PC":
                 return <BsPcDisplay />;
@@ -160,9 +161,9 @@ const Profile = () => {
         }
     };
 
-    const ref = useRef(null);
+    const ref = useRef<HTMLDivElement>(null);
     const saveImage = useCallback(
-        (name, scale) => {
+        (name: string, scale: number) => {
             if (ref.current === null) {
                 return;
             }
@@ -174,7 +175,9 @@ const Profile = () => {
                 scale: scale
             }).then(canvas => {
                 canvas.toBlob(function (blob) {
-                    saveAs(blob, `${name}_Card_${uid}.png`);
+                    if (blob) {
+                        saveAs(blob, `${name}_Card_${uid}.png`);
+                    }
                 });
             });
         },
@@ -396,7 +399,7 @@ const Profile = () => {
                                 <div className="flex w-full max-w-4xl flex-col items-center justify-center px-4">
                                     <button
                                         className="btn my-2 gap-3 bg-purple-600 px-4 py-2 text-2xl hover:bg-purple-500"
-                                        onClick={() => saveImage(character.name, `${customImage ? 1 : 1.5}`)}
+                                        onClick={() => saveImage(character.name, customImage ? 1 : 1.5)}
                                     >
                                         <Image
                                             src={asset_url + "icon/sign/SettingsImageIcon.png"}
@@ -422,7 +425,7 @@ const Profile = () => {
                                             className={`btn text-sm ${hideUID ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setHideUID(!hideUID);
-                                                localStorage.setItem("hideUID", !hideUID);
+                                                localStorage.setItem("hideUID", String(!hideUID));
                                             }}
                                         >
                                             Hide UID / Name
@@ -431,7 +434,7 @@ const Profile = () => {
                                             className={`btn text-sm ${blur ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setBlur(!blur);
-                                                localStorage.setItem("backgroundBlur", !blur);
+                                                localStorage.setItem("backgroundBlur", String(!blur));
                                             }}
                                         >
                                             Unblur Background
@@ -440,7 +443,10 @@ const Profile = () => {
                                             className={`btn text-sm ${substatDistribution ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setSubstatDistribution(!substatDistribution);
-                                                localStorage.setItem("substatDistribution", !substatDistribution);
+                                                localStorage.setItem(
+                                                    "substatDistribution",
+                                                    String(!substatDistribution)
+                                                );
                                             }}
                                         >
                                             Substat Distribution
@@ -449,7 +455,7 @@ const Profile = () => {
                                             className={`btn text-sm ${allTraces ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setAllTraces(!allTraces);
-                                                localStorage.setItem("allTraces", !allTraces);
+                                                localStorage.setItem("allTraces", String(!allTraces));
                                             }}
                                         >
                                             Hide Minor Traces

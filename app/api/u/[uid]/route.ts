@@ -1,7 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+
+interface RetryConfig {
+    maxRetries: number;
+    baseDelay: number;
+    backoffFactor: number;
+    jitter: number;
+}
 
 // Retry configuration
-const RETRY_CONFIG = {
+const RETRY_CONFIG: RetryConfig = {
     maxRetries: 3,
     baseDelay: 1000, // 1 second initial delay
     backoffFactor: 2, // Exponential backoff
@@ -9,7 +16,11 @@ const RETRY_CONFIG = {
 };
 
 // Enhanced fetch with retry mechanism
-async function fetchWithRetry(url, options = {}, retryConfig = RETRY_CONFIG) {
+async function fetchWithRetry(
+    url: string,
+    options: RequestInit = {},
+    retryConfig: RetryConfig = RETRY_CONFIG
+): Promise<Response> {
     const { maxRetries, baseDelay, backoffFactor, jitter } = retryConfig;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -54,7 +65,7 @@ async function fetchWithRetry(url, options = {}, retryConfig = RETRY_CONFIG) {
 }
 
 // Calculate exponential backoff with jitter
-function calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter) {
+function calculateBackoffDelay(baseDelay: number, attempt: number, backoffFactor: number, jitter: number): number {
     // Calculate base exponential backoff
     const calculatedDelay = baseDelay * Math.pow(backoffFactor, attempt);
 
@@ -64,7 +75,11 @@ function calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter) {
     return Math.round(calculatedDelay + jitterAmount);
 }
 
-export async function GET(req, context) {
+interface RouteContext {
+    params: Promise<{ uid: string }>;
+}
+
+export async function GET(req: NextRequest, context: RouteContext) {
     try {
         // Await params as per Next.js requirements
         const params = await context.params;
@@ -75,7 +90,7 @@ export async function GET(req, context) {
         const force_update = new URL(req.url).searchParams.get("force_update") || true;
 
         // Use the new fetchWithRetry for API calls
-        const fetchWithErrorHandling = async url => {
+        const fetchWithErrorHandling = async (url: string) => {
             const response = await fetchWithRetry(url);
             return response.json();
         };
@@ -131,15 +146,53 @@ export async function GET(req, context) {
 }
 
 // Input validation function
-function validateUID(uid) {
+function validateUID(uid: string): string {
     if (!/^\d{1,10}$/.test(uid)) {
         throw new Error("Invalid UID. Must be a 1-10 digit integer.");
     }
     return uid;
 }
 
-// Existing processCharacter function (unchanged from previous implementation)
-function processCharacter(character) {
+interface ApiAttribute {
+    field: string;
+    name: string;
+    icon: string;
+    value: number;
+    display: string;
+    percent?: boolean;
+}
+
+interface ApiSubAffix {
+    field: string;
+    name: string;
+    icon: string;
+    value: number;
+    display: string;
+    count: number;
+    step: number;
+}
+
+interface ApiRelic {
+    id: string;
+    sub_affix: ApiSubAffix[];
+    [key: string]: unknown;
+}
+
+interface ApiRelicSet {
+    id: string;
+    [key: string]: unknown;
+}
+
+interface ApiCharacter {
+    attributes: ApiAttribute[];
+    additions: ApiAttribute[];
+    relics: ApiRelic[];
+    relic_sets: ApiRelicSet[];
+    [key: string]: unknown;
+}
+
+// Existing processCharacter function
+function processCharacter(character: ApiCharacter) {
     // Efficient attribute and addition mapping
     const attributeMap = new Map((character.attributes || []).map(attr => [attr.field, attr]));
     const additionMap = new Map((character.additions || []).map(add => [add.field, add]));
