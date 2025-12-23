@@ -48,7 +48,7 @@ export default function Search() {
                         setLang(e.target.value);
                         localStorage.setItem("lang", e.target.value);
                     }}
-                    className="w-28 rounded border-2 border-gray-200 text-center text-gray-700 focus:border-purple-500 focus:bg-white focus:outline-none"
+                    className="w-28 rounded-sm border-2 border-gray-200 text-center text-gray-700 focus:border-purple-500 focus:bg-white focus:outline-hidden"
                     value={lang || "en"}
                 >
                     <option value="cn">简体中文</option>
@@ -73,18 +73,18 @@ export default function Search() {
                         value={UID}
                         placeholder="Enter UID"
                         onKeyDown={handleKeyDown}
-                        className="w-full appearance-none rounded border-2 border-gray-200 bg-gray-200 px-4 py-2 text-center leading-tight text-gray-700 focus:border-purple-500 focus:bg-white focus:outline-none"
+                        className="w-full appearance-none rounded-sm border-2 border-gray-200 bg-gray-200 px-4 py-2 text-center leading-tight text-gray-700 focus:border-purple-500 focus:bg-white focus:outline-hidden"
                     />
                     <div
                         onClick={() => UID && router.push(`/u/${UID}`)}
-                        className="focus:shadow-outline flex cursor-pointer items-center rounded bg-purple-600 px-4 py-2 font-bold text-white shadow hover:bg-purple-500 focus:outline-none"
+                        className="focus:shadow-outline flex cursor-pointer items-center rounded-sm bg-purple-600 px-4 py-2 font-bold text-white shadow-sm hover:bg-purple-500 focus:outline-hidden"
                     >
                         <span>Search</span>
                     </div>
                 </div>
             </div>
             {savedUID && (
-                <div className="flex cursor-pointer flex-row items-center space-x-1 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
+                <div className="flex cursor-pointer flex-row items-center space-x-1 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
                     <Link href={`/u/${savedUID}`} className="flex gap-2">
                         <Image
                             src="https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/icon/sign/SettingsAccount.png"
