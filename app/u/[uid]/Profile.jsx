@@ -190,7 +190,7 @@ const Profile = () => {
             <div className="flex h-auto min-h-screen items-center justify-center">
                 <div className="flex overflow-auto">
                     <div className="my-5 flex flex-col lg:items-center">
-                        <div className="mx-3 flex h-auto w-[95vw] flex-col items-center justify-center gap-4 lg:w-[600px]">
+                        <div className="mx-auto flex h-auto w-full max-w-lg flex-col items-center justify-center gap-4 px-4">
                             <Image
                                 src={asset_url + data?.player.avatar.icon}
                                 width={120}
@@ -200,14 +200,14 @@ const Profile = () => {
                             />
                             <span className="text-3xl">{nickname}</span>
                             <span className="text-2xl text-gray-300">{signature}</span>
-                            <div className="flex w-full flex-row items-center justify-evenly gap-2 text-center">
+                            <div className="flex w-full flex-row items-center justify-evenly gap-4 text-center">
                                 <div className="flex flex-col">
-                                    <span className="text-2xl text-neutral-400">Trailblaze Level</span>
-                                    <span className="text-xl">{data?.player.level}</span>
+                                    <span className="text-lg text-neutral-400 md:text-2xl">Trailblaze Level</span>
+                                    <span className="text-lg md:text-xl">{data?.player.level}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-2xl text-neutral-400">Equilibrium Level</span>
-                                    <span className="text-xl">{data?.player.world_level}</span>
+                                    <span className="text-lg text-neutral-400 md:text-2xl">Equilibrium Level</span>
+                                    <span className="text-lg md:text-xl">{data?.player.world_level}</span>
                                 </div>
                             </div>
                             <div className="flex w-3/4 flex-col gap-2">
@@ -233,11 +233,8 @@ const Profile = () => {
                             </div>
                             <div className="flex flex-col items-center gap-2">
                                 <span className="text-2xl">UID {data?.player.uid}</span>
-                                <div className="flex flex-row flex-wrap justify-center gap-4">
-                                    <div
-                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
-                                        onClick={() => router.push("/")}
-                                    >
+                                <div className="flex flex-row flex-wrap justify-center gap-2">
+                                    <button className="btn" onClick={() => router.push("/")}>
                                         <Image
                                             src={asset_url + "icon/sign/ReplacementIcon.png"}
                                             alt="Change UID Icon"
@@ -245,12 +242,9 @@ const Profile = () => {
                                             height={24}
                                         />
                                         <span>Change UID</span>
-                                    </div>
+                                    </button>
                                     {savedUID !== uid && (
-                                        <div
-                                            className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
-                                            onClick={linkUID}
-                                        >
+                                        <button className="btn" onClick={linkUID}>
                                             <Image
                                                 src={asset_url + "icon/sign/FriendAddIcon.png"}
                                                 alt="UID Linked"
@@ -258,10 +252,10 @@ const Profile = () => {
                                                 height={24}
                                             />
                                             <span>Link UID</span>
-                                        </div>
+                                        </button>
                                     )}
-                                    <div
-                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                    <button
+                                        className="btn"
                                         onClick={() =>
                                             router.push(`/api/u/${uid}?lang=${localStorage.getItem("lang")}`)
                                         }
@@ -273,9 +267,9 @@ const Profile = () => {
                                             height={24}
                                         />
                                         <span>API Information</span>
-                                    </div>
-                                    <div
-                                        className="flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                    </button>
+                                    <button
+                                        className="btn"
                                         onClick={() => {
                                             setShowSavedBuilds(!showSavedBuilds);
                                             setSelected(null);
@@ -288,11 +282,11 @@ const Profile = () => {
                                             height={24}
                                         />
                                         <span>{showSavedBuilds ? "Profile" : "Saved Builds"}</span>
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                             {showSavedBuilds ? (
-                                <div className="mb-1 flex w-[400px] gap-6 overflow-x-auto p-6 md:w-[600px]">
+                                <div className="mb-1 flex w-full max-w-lg gap-4 overflow-x-auto p-4 md:gap-6 md:p-6">
                                     {savedBuilds.map((build, index) => (
                                         <div
                                             className={`
@@ -399,95 +393,82 @@ const Profile = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex w-screen flex-col items-center justify-center">
-                                    <div
-                                        className="my-2 flex cursor-pointer flex-row justify-center gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
+                                <div className="flex w-full max-w-4xl flex-col items-center justify-center px-4">
+                                    <button
+                                        className="btn my-2 gap-3 bg-purple-600 px-4 py-2 text-2xl hover:bg-purple-500"
                                         onClick={() => saveImage(character.name, `${customImage ? 1 : 1.5}`)}
                                     >
                                         <Image
                                             src={asset_url + "icon/sign/SettingsImageIcon.png"}
                                             alt="Save Image Icon"
-                                            width={32}
-                                            height={32}
+                                            width={28}
+                                            height={28}
                                         />
-                                        <span className="text-3xl">Download</span>
-                                    </div>
-                                    <div className="mx-3 my-2 flex flex-row flex-wrap items-center justify-center gap-x-4 gap-y-2">
-                                        <div>
-                                            <label className="h-[30px] cursor-pointer gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
-                                                Custom Image
-                                                <input
-                                                    type="file"
-                                                    onChange={e =>
-                                                        setCustomImage(URL.createObjectURL(e.target.files[0]))
-                                                    }
-                                                    className="hidden"
-                                                    accept="image/*"
-                                                />
-                                            </label>
-                                        </div>
-                                        <div
-                                            className={`h-[30px] cursor-pointer gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none ${
-                                                hideUID && "border"
-                                            }`}
+                                        Download
+                                    </button>
+                                    <div className="my-2 flex flex-row flex-wrap items-center justify-center gap-2">
+                                        <label
+                                            className={`btn text-sm ${customImage ? "border border-purple-500 bg-purple-600/30" : ""}`}
+                                        >
+                                            Custom Image
+                                            <input
+                                                type="file"
+                                                onChange={e => setCustomImage(URL.createObjectURL(e.target.files[0]))}
+                                                className="hidden"
+                                                accept="image/*"
+                                            />
+                                        </label>
+                                        <button
+                                            className={`btn text-sm ${hideUID ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setHideUID(!hideUID);
                                                 localStorage.setItem("hideUID", !hideUID);
                                             }}
                                         >
-                                            <span>Hide UID / Name</span>
-                                        </div>
-                                        <div
-                                            className={`h-[30px] cursor-pointer gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none ${
-                                                blur && "border"
-                                            }`}
+                                            Hide UID / Name
+                                        </button>
+                                        <button
+                                            className={`btn text-sm ${blur ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setBlur(!blur);
                                                 localStorage.setItem("backgroundBlur", !blur);
                                             }}
                                         >
-                                            <span>Unblur Background</span>
-                                        </div>
-                                        <div
-                                            className={`h-[30px] cursor-pointer gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none ${
-                                                substatDistribution && "border"
-                                            }`}
+                                            Unblur Background
+                                        </button>
+                                        <button
+                                            className={`btn text-sm ${substatDistribution ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setSubstatDistribution(!substatDistribution);
                                                 localStorage.setItem("substatDistribution", !substatDistribution);
                                             }}
                                         >
-                                            <span>Substat Distribution</span>
-                                        </div>
-                                        <div
-                                            className={`h-[30px] cursor-pointer gap-2 rounded bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none ${
-                                                allTraces && "border"
-                                            }`}
+                                            Substat Distribution
+                                        </button>
+                                        <button
+                                            className={`btn text-sm ${allTraces ? "border border-purple-500 bg-purple-600/30" : ""}`}
                                             onClick={() => {
                                                 setAllTraces(!allTraces);
                                                 localStorage.setItem("allTraces", !allTraces);
                                             }}
                                         >
-                                            <span>Hide Minor Traces</span>
-                                        </div>
+                                            Hide Minor Traces
+                                        </button>
                                     </div>
                                     <div className="my-2 flex">
                                         <input
                                             type="text"
                                             name="buildName"
                                             onChange={e => setBuildName(e.target.value)}
-                                            className="relative m-0 -mr-0.5 flex rounded-l border border-neutral-300 bg-clip-padding px-3 text-base leading-[1.6] text-neutral-600 outline-hidden"
+                                            className="focus-ring rounded-l-lg border border-gray-600 bg-gray-800 px-3 py-1.5 text-base text-white outline-hidden placeholder:text-gray-400 focus:border-purple-500"
                                             value={buildName}
                                             placeholder="Build Name"
                                             aria-label="Build Name"
                                             maxLength={30}
                                         />
-                                        <div
-                                            className="h-[30px] cursor-pointer gap-2 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none"
-                                            onClick={saveBuild}
-                                        >
+                                        <button className="btn rounded-l-none rounded-r-lg" onClick={saveBuild}>
                                             Save Build
-                                        </div>
+                                        </button>
                                     </div>
                                 </div>
                             </>

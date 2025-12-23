@@ -33,11 +33,11 @@ export default function Search() {
     };
 
     return (
-        <div className="text-centers flex flex-col items-center gap-3">
+        <div className="flex w-full max-w-md flex-col items-center gap-4">
             <label htmlFor="uid" className="sr-only">
                 Enter UID
             </label>
-            <div className="flex flex-row flex-wrap justify-center gap-3">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
                 <label htmlFor="lang" className="sr-only">
                     Select Language
                 </label>
@@ -48,7 +48,7 @@ export default function Search() {
                         setLang(e.target.value);
                         localStorage.setItem("lang", e.target.value);
                     }}
-                    className="w-28 rounded-sm border-2 border-gray-200 text-center text-gray-700 focus:border-purple-500 focus:bg-white focus:outline-hidden"
+                    className="focus-ring w-full rounded-lg border-2 border-gray-600 bg-gray-800 px-3 py-2 text-center text-white transition-colors hover:border-gray-500 focus:border-purple-500 focus:bg-gray-900 focus:outline-hidden sm:w-32"
                     value={lang || "en"}
                 >
                     <option value="cn">简体中文</option>
@@ -65,7 +65,7 @@ export default function Search() {
                     <option value="th">ภาษาไทย</option>
                     <option value="vi">Tiếng Việt</option>
                 </select>
-                <div className="flex gap-3">
+                <div className="flex w-full gap-2 sm:w-auto">
                     <input
                         type="text"
                         name="uid"
@@ -73,28 +73,29 @@ export default function Search() {
                         value={UID}
                         placeholder="Enter UID"
                         onKeyDown={handleKeyDown}
-                        className="w-full appearance-none rounded-sm border-2 border-gray-200 bg-gray-200 px-4 py-2 text-center leading-tight text-gray-700 focus:border-purple-500 focus:bg-white focus:outline-hidden"
+                        className="focus-ring w-full appearance-none rounded-lg border-2 border-gray-600 bg-gray-800 px-4 py-2 text-center leading-tight text-white transition-colors placeholder:text-gray-400 hover:border-gray-500 focus:border-purple-500 focus:bg-gray-900 focus:outline-hidden sm:w-40"
                     />
-                    <div
+                    <button
                         onClick={() => UID && router.push(`/u/${UID}`)}
-                        className="focus:shadow-outline flex cursor-pointer items-center rounded-sm bg-purple-600 px-4 py-2 font-bold text-white shadow-sm hover:bg-purple-500 focus:outline-hidden"
+                        className="btn bg-purple-600 px-5 py-2 font-bold text-white hover:bg-purple-500"
                     >
-                        <span>Search</span>
-                    </div>
+                        Search
+                    </button>
                 </div>
             </div>
             {savedUID && (
-                <div className="flex cursor-pointer flex-row items-center space-x-1 rounded-sm bg-stone-800 px-3 py-1 shadow-md shadow-stone-900 hover:brightness-110 active:shadow-none">
-                    <Link href={`/u/${savedUID}`} className="flex gap-2">
-                        <Image
-                            src="https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/icon/sign/SettingsAccount.png"
-                            alt="Icon Linked Profile"
-                            width={24}
-                            height={24}
-                        />
-                        <span>Linked Profile: {savedUID}</span>
-                    </Link>
-                </div>
+                <Link
+                    href={`/u/${savedUID}`}
+                    className="btn gap-2 border border-stone-600 bg-stone-800 px-4 py-2 transition-all hover:border-stone-500"
+                >
+                    <Image
+                        src="https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/icon/sign/SettingsAccount.png"
+                        alt="Icon Linked Profile"
+                        width={24}
+                        height={24}
+                    />
+                    <span>Linked Profile: {savedUID}</span>
+                </Link>
             )}
         </div>
     );

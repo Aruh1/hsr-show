@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 
 const SERVER_ENDPOINTS = {
-    USA: { url: "/api/u/600000006" },
+    "Official-USA": { url: "/api/u/600000006" },
     "GF-CN": { url: "/api/u/100000009" },
     "Official-CHT": { url: "/api/u/900000001" },
     "QD-CN": { url: "/api/u/500000001" },
@@ -85,25 +85,28 @@ export default function ApiStatus() {
     }, [checkAllServers]);
 
     return (
-        <div className="mt-8 w-full max-w-3xl">
-            <h2 className="mb-4 text-2xl font-semibold">Server Status</h2>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <div className="mt-6 w-full max-w-3xl px-4">
+            <h2 className="mb-4 text-xl font-semibold text-gray-200 md:text-2xl">Server Status</h2>
+            <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 md:grid-cols-3">
                 {Object.entries(apiStatuses).map(([server, status]) => (
                     <div
                         key={server}
-                        className="flex flex-col items-center rounded-lg border border-gray-200/50 bg-transparent p-3 backdrop-blur-xs hover:border-gray-300/50 transition-colors duration-200"
+                        className="flex flex-col items-center rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10"
                     >
-                        <div className="text-sm font-medium">{server}</div>
+                        <div className="text-sm font-medium text-gray-200">{server}</div>
                         <div className="mt-2">
                             {status.isLoading ? (
-                                <div className="text-sm text-gray-500">Checking...</div>
+                                <div className="flex items-center gap-2 rounded-full bg-gray-700/50 px-3 py-1 text-sm text-gray-300">
+                                    <div className="animate-pulse-dot h-2 w-2 rounded-full bg-gray-400"></div>
+                                    Checking...
+                                </div>
                             ) : status.isConnected ? (
-                                <div className="flex items-center gap-1 rounded-full bg-green-100/80 px-3 py-1 text-sm text-green-800">
+                                <div className="flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400 transition-all duration-300">
                                     <div className="h-2 w-2 rounded-full bg-green-500"></div>
                                     Connected
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-1 rounded-full bg-red-100/80 px-3 py-1 text-sm text-red-800">
+                                <div className="flex items-center gap-1.5 rounded-full bg-red-500/20 px-3 py-1 text-sm text-red-400 transition-all duration-300">
                                     <div className="h-2 w-2 rounded-full bg-red-500"></div>
                                     Error
                                 </div>

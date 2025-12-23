@@ -9,59 +9,55 @@ const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="mx-auto max-w-3xl overflow-hidden px-4 sm:px-6 md:max-w-5xl">
-            <hr className="mx-auto mt-8 h-0.5 w-full border-0 bg-white" />
-            <div className="mx-auto flex flex-col items-center gap-1 p-2 text-center md:flex-row md:justify-between">
-                <span href="https://pololer.my.id">© {currentYear} pololer</span>
-                <span className="text-sm">
+        <footer className="mx-auto max-w-3xl px-4 py-4 sm:px-6 md:max-w-5xl">
+            <hr className="mb-4 h-px w-full border-0 bg-white/30" />
+            <div className="flex flex-col items-center gap-3 text-center md:flex-row md:justify-between">
+                <span className="text-sm text-gray-300">© {currentYear} pololer</span>
+                <span className="max-w-md text-xs text-gray-400">
                     This site is not affiliated with miHoYo &amp; All game content and assets are trademarks and
                     copyrights of miHoYo.
                 </span>
-                <div className="mb-1 flex flex-row items-center justify-center space-x-2">
+                <div className="flex flex-row items-center gap-4">
                     <Link
                         href="https://discord.gg/qefR5pXp8z"
                         aria-label="Discord"
                         rel="noreferrer"
                         target="_blank"
-                        legacyBehavior
+                        className="text-gray-300 transition-all hover:-translate-y-1 hover:text-white"
                     >
-                        <BsDiscord className="cursor-pointer transition-transform hover:-translate-y-1" size={30} />
+                        <BsDiscord size={26} />
                     </Link>
                     <Link
                         href="https://github.com/Aruh1/hsr-show"
                         aria-label="GitHub"
                         rel="noreferrer"
                         target="_blank"
-                        legacyBehavior
+                        className="text-gray-300 transition-all hover:-translate-y-1 hover:text-white"
                     >
-                        <AiOutlineGithub
-                            className="cursor-pointer transition-transform hover:-translate-y-1"
-                            size={30}
-                        />
+                        <AiOutlineGithub size={26} />
                     </Link>
                     <Link
                         href="https://ko-fi.com/pololer"
                         aria-label="Kofi"
                         rel="noreferrer"
                         target="_blank"
-                        legacyBehavior
+                        className="text-gray-300 transition-all hover:-translate-y-1 hover:text-white"
                     >
-                        <SiKofi className="cursor-pointer transition-transform hover:-translate-y-1" size={30} />
+                        <SiKofi size={26} />
                     </Link>
                     <Link
                         href="https://trakteer.id/luminiatus"
                         aria-label="Trakteer"
                         rel="noopener noreferrer"
                         target="_blank"
-                        legacyBehavior
+                        className="text-gray-300 transition-all hover:-translate-y-1 hover:text-white"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="02 0 24 24"
                             fill="currentColor"
-                            className="cursor-pointer transition-transform hover:-translate-y-1"
-                            width={30}
-                            height={30}
+                            width={26}
+                            height={26}
                             title="Trakteer"
                         >
                             <rect x="7" y="8" width="10" height="12" rx="2" ry="2" />
