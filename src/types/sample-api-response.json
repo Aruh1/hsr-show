@@ -1,0 +1,240 @@
+{
+    "status": 200,
+    "player": {
+        "uid": "807613532",
+        "nickname": "pololer",
+        "level": 70,
+        "world_level": 6,
+        "friend_count": 35,
+        "avatar": {
+            "id": "202021",
+            "name": "Mem",
+            "icon": "icon/avatar/IconHead_202021.png"
+        },
+        "signature": "Hylyh",
+        "is_display": true,
+        "space_info": {
+            "memory_data": null,
+            "universe_level": 0,
+            "avatar_count": 58,
+            "light_cone_count": 95,
+            "relic_count": 1282,
+            "achievement_count": 958,
+            "book_count": 327,
+            "music_count": 159
+        }
+    },
+    "characters": [
+        {
+            "id": "1415",
+            "name": "Cyrene",
+            "rarity": 5,
+            "rank": 0,
+            "level": 80,
+            "promotion": 6,
+            "enhanced": false,
+            "icon": "icon/character/1415.png",
+            "preview": "image/character_preview/1415.png",
+            "portrait": "image/character_portrait/1415.png",
+            "rank_icons": [
+                "icon/skill/1415_rank1.png",
+                "icon/skill/1415_rank2.png",
+                "icon/skill/1415_ultimate.png",
+                "icon/skill/1415_rank4.png",
+                "icon/skill/1415_skill.png",
+                "icon/skill/1415_rank6.png"
+            ],
+            "path": {
+                "id": "Memory",
+                "name": "Remembrance",
+                "icon": "icon/path/Remembrance.png"
+            },
+            "element": {
+                "id": "Ice",
+                "name": "Ice",
+                "color": "#47C7FD",
+                "icon": "icon/element/Ice.png"
+            },
+            "skills": [
+                {
+                    "id": "141501",
+                    "name": "Lo, Hope Takes Flight!",
+                    "level": 6,
+                    "max_level": 10,
+                    "element": {
+                        "id": "Ice",
+                        "name": "Ice",
+                        "color": "#47C7FD",
+                        "icon": "icon/element/Ice.png"
+                    },
+                    "type": "Normal",
+                    "type_text": "Basic ATK",
+                    "effect": "SingleAttack",
+                    "effect_text": "Single Target",
+                    "simple_desc": "Gains \"Recollection\" and deals minor Ice DMG to one enemy.",
+                    "desc": "Gains 1 \"Recollection\" point(s) and deals Ice DMG equal to 50% of Cyrene's Max HP to one designated enemy.",
+                    "icon": "icon/skill/1415_basic_atk.png"
+                }
+            ],
+            "skill_trees": [
+                {
+                    "id": "1415001",
+                    "level": 6,
+                    "anchor": "Point01",
+                    "max_level": 6,
+                    "icon": "icon/skill/1415_basic_atk.png",
+                    "parent": null
+                }
+            ],
+            "light_cone": {
+                "id": "23052",
+                "name": "This Love, Forever",
+                "rarity": 5,
+                "rank": 1,
+                "level": 80,
+                "promotion": 6,
+                "icon": "icon/light_cone/23052.png",
+                "preview": "image/light_cone_preview/23052.png",
+                "portrait": "image/light_cone_portrait/23052.png",
+                "path": {
+                    "id": "Memory",
+                    "name": "Remembrance",
+                    "icon": "icon/path/Remembrance.png"
+                },
+                "attributes": [
+                    {
+                        "field": "hp",
+                        "name": "Base HP",
+                        "icon": "icon/property/IconMaxHP.png",
+                        "value": 1270.08,
+                        "display": "1270",
+                        "percent": false
+                    }
+                ],
+                "properties": [
+                    {
+                        "type": "SpeedAddedRatio",
+                        "field": "spd",
+                        "name": "SPD",
+                        "icon": "icon/property/IconSpeed.png",
+                        "value": 0.18,
+                        "display": "18.0%",
+                        "percent": true
+                    }
+                ]
+            },
+            "relics": [
+                {
+                    "id": "61271",
+                    "name": "Deliverer's Hood",
+                    "type": 1,
+                    "set_id": "127",
+                    "set_name": "World-Remaking Deliverer",
+                    "rarity": 5,
+                    "level": 15,
+                    "icon": "icon/relic/127_0.png",
+                    "main_affix": {
+                        "type": "HPDelta",
+                        "field": "hp",
+                        "name": "HP",
+                        "icon": "icon/property/IconMaxHP.png",
+                        "value": 705.6,
+                        "display": "705",
+                        "percent": false
+                    },
+                    "sub_affix": [
+                        {
+                            "type": "AttackDelta",
+                            "field": "atk",
+                            "name": "ATK",
+                            "icon": "icon/property/IconAttack.png",
+                            "value": 40.22,
+                            "display": "40",
+                            "percent": false,
+                            "count": 2,
+                            "step": 3,
+                            "dist": [2, 1]
+                        }
+                    ]
+                }
+            ],
+            "relic_sets": [
+                {
+                    "id": "127",
+                    "name": "World-Remaking Deliverer",
+                    "icon": "icon/relic/127.png",
+                    "num": 2,
+                    "desc": "Increases CRIT Rate by 8%.",
+                    "properties": [
+                        {
+                            "type": "CriticalChanceBase",
+                            "field": "crit_rate",
+                            "name": "CRIT Rate",
+                            "icon": "icon/property/IconCriticalChance.png",
+                            "value": 0.08,
+                            "display": "8.0%",
+                            "percent": true
+                        }
+                    ]
+                }
+            ],
+            "statistics": [
+                {
+                    "field": "hp",
+                    "name": "Base HP",
+                    "icon": "icon/property/IconMaxHP.png",
+                    "value": 5278.47,
+                    "display": "5278",
+                    "percent": false
+                }
+            ],
+            "attributes": [
+                {
+                    "field": "hp",
+                    "name": "Base HP",
+                    "icon": "icon/property/IconMaxHP.png",
+                    "value": 2667.17,
+                    "display": "2667",
+                    "percent": false
+                }
+            ],
+            "additions": [
+                {
+                    "field": "crit_dmg",
+                    "name": "CRIT DMG",
+                    "icon": "icon/property/IconCriticalDamage.png",
+                    "value": 0.969,
+                    "display": "96.9%",
+                    "percent": true
+                }
+            ],
+            "properties": [
+                {
+                    "type": "CriticalDamageBase",
+                    "field": "crit_dmg",
+                    "name": "CRIT DMG",
+                    "icon": "icon/property/IconCriticalDamage.png",
+                    "value": 0.969,
+                    "display": "96.9%",
+                    "percent": true
+                }
+            ],
+            "pos": [0],
+            "property": [
+                {
+                    "name": "Base HP",
+                    "icon": "icon/property/IconMaxHP.png",
+                    "base": 2667,
+                    "addition": 2611.31,
+                    "value": 5278.47,
+                    "display": "5278"
+                }
+            ]
+        }
+    ],
+    "detailInfo": {
+        "platform": "PC"
+    },
+    "timestamp": "2025-12-23T22:57:06.000Z",
+    "powered": "API mihomo: https://api.mihomo.me/"
+}

@@ -6,8 +6,14 @@ export interface PlayerAvatar {
 }
 
 export interface SpaceInfo {
+    memory_data: unknown | null;
+    universe_level: number;
     avatar_count: number;
+    light_cone_count: number;
+    relic_count: number;
     achievement_count: number;
+    book_count: number;
+    music_count: number;
 }
 
 export interface Player {
@@ -15,8 +21,10 @@ export interface Player {
     nickname: string;
     level: number;
     world_level: number;
+    friend_count: number;
     avatar: PlayerAvatar;
     signature?: string;
+    is_display: boolean;
     space_info: SpaceInfo;
 }
 
@@ -34,22 +42,35 @@ export interface Path {
     icon: string;
 }
 
+export interface SkillElement {
+    id: string;
+    name: string;
+    color: string;
+    icon: string;
+}
+
 export interface Skill {
     id: string;
     name: string;
     level: number;
     max_level: number;
-    icon: string;
+    element: SkillElement | null;
+    type: string;
     type_text: string;
+    effect: string;
+    effect_text: string;
+    simple_desc: string;
+    desc: string;
+    icon: string;
 }
 
 export interface SkillTree {
     id: string;
     level: number;
+    anchor: string;
     max_level: number;
     icon: string;
     parent: string | null;
-    anchor: string;
 }
 
 export interface Attribute {
@@ -59,6 +80,16 @@ export interface Attribute {
     value: number;
     display: string;
     percent?: boolean;
+}
+
+export interface LightConeProperty {
+    type: string;
+    field: string;
+    name: string;
+    icon: string;
+    value: number;
+    display: string;
+    percent: boolean;
 }
 
 export interface LightCone {
@@ -71,31 +102,38 @@ export interface LightCone {
     icon: string;
     preview: string;
     portrait: string;
+    path: Path;
     attributes: Attribute[];
+    properties: LightConeProperty[];
 }
 
 export interface SubAffix {
+    type: string;
     field: string;
     name: string;
     icon: string;
     value: number;
     display: string;
+    percent: boolean;
     count: number;
     step: number;
     dist?: number[];
 }
 
 export interface MainAffix {
+    type: string;
     field: string;
     name: string;
     icon: string;
     value: number;
     display: string;
+    percent: boolean;
 }
 
 export interface Relic {
     id: string;
     name: string;
+    type: number;
     set_id: string;
     set_name: string;
     rarity: number;
@@ -105,11 +143,42 @@ export interface Relic {
     sub_affix: SubAffix[];
 }
 
+export interface RelicSetProperty {
+    type: string;
+    field: string;
+    name: string;
+    icon: string;
+    value: number;
+    display: string;
+    percent: boolean;
+}
+
 export interface RelicSet {
     id: string;
     name: string;
     icon: string;
     num: number;
+    desc: string;
+    properties: RelicSetProperty[];
+}
+
+export interface Statistic {
+    field: string;
+    name: string;
+    icon: string;
+    value: number;
+    display: string;
+    percent: boolean;
+}
+
+export interface CharacterProperty {
+    type?: string;
+    field?: string;
+    name: string;
+    icon: string;
+    value: number;
+    display: string;
+    percent?: boolean;
 }
 
 export interface Property {
@@ -128,20 +197,24 @@ export interface Character {
     rank: number;
     level: number;
     promotion: number;
+    enhanced: boolean;
     icon: string;
     preview: string;
     portrait: string;
-    element: Element;
+    rank_icons: string[];
     path: Path;
+    element: Element;
     skills: Skill[];
     skill_trees: SkillTree[];
     light_cone: LightCone | null;
     relics: Relic[];
     relic_sets: RelicSet[];
+    statistics: Statistic[];
     attributes: Attribute[];
     additions: Attribute[];
+    properties: CharacterProperty[];
+    pos: number[];
     property: Property[];
-    rank_icons: string[];
 }
 
 // API Response type
@@ -167,6 +240,10 @@ export interface ServerStatus {
 
 export interface ServerEndpoint {
     url: string;
+}
+
+export interface ApiStatuses {
+    [key: string]: ServerStatus;
 }
 
 // Build types
