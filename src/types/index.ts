@@ -253,3 +253,15 @@ export interface SavedBuild {
     buildName: string;
     character: Character;
 }
+
+// Profile settings type
+export interface ProfileSettings {
+    hideUID: boolean;
+    blur: boolean;
+    substatDistribution: boolean;
+    allTraces: boolean;
+    lang: string;
+}
+
+// Supported language codes
+export type Language = "cn" | "cht" | "de" | "en" | "es" | "fr" | "id" | "jp" | "kr" | "pt" | "ru" | "th" | "vi";

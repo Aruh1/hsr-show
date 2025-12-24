@@ -1,4 +1,9 @@
+import { useMemo } from "react";
 import type { Character, SkillTree } from "@/types";
+import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS } from "@/lib/constants";
+import { TraceTree, MinorTraces } from "@/components/TraceComponents";
+import { RelicCard } from "@/components/RelicCard";
+import { StatRow, DefaultEnergyRow } from "@/components/StatRow";
 
 interface CharacterCardProps {
     character: Character;
@@ -16,12 +21,6 @@ interface IconMap {
     [key: string]: SkillTree[];
 }
 
-interface TraceTreeProps {
-    iconData: SkillTree;
-    iconMap: IconMap;
-    path: string;
-}
-
 const CharacterCard = ({
     character,
     uid,
@@ -33,105 +32,42 @@ const CharacterCard = ({
     allTraces,
     lang
 }: CharacterCardProps) => {
-    const asset_url = "https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/";
-    const roman_num: Record<number, string> = {
-        1: "I",
-        2: "II",
-        3: "III",
-        4: "IV",
-        5: "V"
-    };
+    // Get localized labels for Memosprite
+    const localizedLabels = MEMOSPRITE_LABELS[lang] || MEMOSPRITE_LABELS["en"];
 
-    const memospriteLabels: Record<string, { skill: string; talent: string }> = {
-        en: { skill: "Memosprite Skill", talent: "Memosprite Talent" },
-        jp: { skill: "記憶の精霊スキル", talent: "記憶の精霊天賦" },
-        cn: { skill: "记忆灵战技", talent: "记忆灵天赋" },
-        cht: { skill: "記憶靈戰技", talent: "記憶靈天賦" },
-        kr: { skill: "기억의 정령 전술", talent: "기억의 정령 특성" },
-        de: { skill: "Gedächtnisgeist-Fertigkeit", talent: "Gedächtnisgeist-Talent" },
-        es: { skill: "Habilidad de memoespíritu", talent: "Talento de memoespíritu" },
-        fr: { skill: "Compétence de mémo-esprit", talent: "Talent de mémo-esprit" },
-        id: { skill: "Memosprite Skill", talent: "Memosprite Talent" },
-        pt: { skill: "Perícia de Memosprites", talent: "Talento de Memosprites" },
-        ru: { skill: "Навык мем-духа", talent: "Талант мем-духа" },
-        th: { skill: "สกิล Memosprite", talent: "พรสวรรค์ Memosprite" },
-        vi: { skill: "Chiến Kỹ Linh Hồn Ký Ức", talent: "Thiên Phú Linh Hồn Ký Ức" }
-    };
-
-    const localizedLabels = memospriteLabels[lang] || memospriteLabels["en"];
-
-    const skill_types = new Map<string, string>();
-    character.skills.forEach(skill => {
-        skill_types.set(skill.id.slice(-2), skill.type_text);
-    });
-
-    const iconMap: IconMap = character.skill_trees.reduce((map: IconMap, icon) => {
-        if (icon.parent !== null) {
-            if (!map[icon.parent]) {
-                map[icon.parent] = [];
-            }
-            map[icon.parent].push(icon);
-        }
+    // Memoize skill type map - only recompute when skills change
+    const skillTypes = useMemo(() => {
+        const map = new Map<string, string>();
+        character.skills.forEach(skill => {
+            map.set(skill.id.slice(-2), skill.type_text);
+        });
         return map;
-    }, {});
+    }, [character.skills]);
 
-    const MinorTraces = () => {
-        const propertyIcons = character.skill_trees.filter(
-            item => item.icon.startsWith("icon/property/Icon") && !item.parent
+    // Memoize icon map - only recompute when skill_trees change
+    const iconMap = useMemo<IconMap>(() => {
+        return character.skill_trees.reduce((map: IconMap, icon) => {
+            if (icon.parent !== null) {
+                if (!map[icon.parent]) {
+                    map[icon.parent] = [];
+                }
+                map[icon.parent].push(icon);
+            }
+            return map;
+        }, {});
+    }, [character.skill_trees]);
+
+    // Memoize major traces filter - only recompute when skill_trees change
+    const majorTraces = useMemo(() => {
+        return character.skill_trees.filter(
+            icon => icon.parent === null && icon.max_level === 1 && icon.anchor !== "Point05"
         );
-        return (
-            <div className="flex flex-col items-center justify-center gap-1">
-                {propertyIcons.map((propertyIcon, index) => (
-                    <img
-                        key={propertyIcon.id || index}
-                        src={asset_url + propertyIcon.icon}
-                        alt={`Property Icon ${propertyIcon.id}`}
-                        className={`h-6 w-6 rounded-full bg-neutral-800 p-0.5 ${propertyIcon.level === 0 && "opacity-30"}`}
-                    />
-                ))}
-            </div>
-        );
-    };
+    }, [character.skill_trees]);
 
-    const TraceTree = ({ iconData, iconMap, path }: TraceTreeProps) => {
-        const icon = iconData;
-        const children = iconMap[icon.id];
-        const iconStyle = icon.icon.startsWith("icon/skill/")
-            ? "w-10 h-10 border-2 border-neutral-300"
-            : "w-6 h-6 p-0.5";
-        const iconState = icon.level === 0 ? "opacity-30" : "";
-        let show = true;
-        if (["Rogue", "Priest"].includes(path)) {
-            show = !["Point09", "Point12", "Point15", "Point18"].includes(icon.anchor);
-        }
-
-        return (
-            show && (
-                <div
-                    className={`flex items-center justify-center gap-1
-                        ${!["Rogue", "Priest", "Warrior", "Warlock", "Shaman", "Mage", "Memory"].includes(path) ? "flex-row" : "flex-col"}
-                        ${path === "Knight" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
-                        ${path === "Memory" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
-                        ${path === "Memory" && icon.anchor === "Point09" ? "flex-col" : ""}
-                        ${path === "Knight" && icon.anchor === "Point09" ? "flex-col" : ""}`}
-                >
-                    <img
-                        src={asset_url + icon.icon}
-                        alt={`Icon ${icon.id}`}
-                        className={`${iconStyle} ${iconState} rounded-full bg-neutral-800`}
-                    />
-                    {children &&
-                        children.map((childIcon, index) => (
-                            <TraceTree key={childIcon.id || index} iconData={childIcon} iconMap={iconMap} path={path} />
-                        ))}
-                </div>
-            )
-        );
-    };
-
-    const majorTraces = character.skill_trees.filter(
-        icon => icon.parent === null && icon.max_level === 1 && icon.anchor !== "Point05"
-    );
+    // Check if character has energy recovery stat
+    const hasEnergyRecovery = useMemo(() => {
+        return character.property.some(item => item.icon === "icon/property/IconEnergyRecovery.png");
+    }, [character.property]);
 
     return (
         <div className={`relative min-h-[650px] w-[1400px] rounded-3xl ${blur ? "BG" : "Blur-BG"} overflow-hidden`}>
@@ -152,7 +88,7 @@ const CharacterCard = ({
                             ></div>
                         ) : (
                             <img
-                                src={asset_url + character?.portrait}
+                                src={ASSET_URL + character?.portrait}
                                 alt="Character Preview"
                                 className="scale-[1.8]"
                             />
@@ -165,7 +101,7 @@ const CharacterCard = ({
                                     key={index}
                                     className="relative my-1 flex rounded-full border-2 border-neutral-300 bg-neutral-800"
                                 >
-                                    <img src={asset_url + rank_icon} alt="Rank Icon" className="h-auto w-10" />
+                                    <img src={ASSET_URL + rank_icon} alt="Rank Icon" className="h-auto w-10" />
                                 </div>
                             ))}
                         </div>
@@ -176,7 +112,7 @@ const CharacterCard = ({
                                     className="relative my-1 flex rounded-full border-2 border-neutral-500 bg-neutral-800"
                                 >
                                     <img
-                                        src={asset_url + rank_icon}
+                                        src={ASSET_URL + rank_icon}
                                         alt="Rank Icon"
                                         className="h-auto w-10 scale-[0.9]"
                                     />
@@ -215,14 +151,14 @@ const CharacterCard = ({
                                         {character?.name}
                                     </span>
                                     <img
-                                        src={asset_url + character?.element.icon}
+                                        src={ASSET_URL + character?.element.icon}
                                         alt="Element Icon"
                                         className="h-auto w-14"
                                     />
                                 </div>
                                 <div className="flex flex-row items-center gap-2">
                                     <img
-                                        src={asset_url + character?.path.icon}
+                                        src={ASSET_URL + character?.path.icon}
                                         alt="Path Icon"
                                         className="h-auto w-8"
                                     />
@@ -237,7 +173,7 @@ const CharacterCard = ({
                             <div className="relative mx-4 flex h-auto w-auto flex-row items-center justify-evenly py-2">
                                 <div className="absolute mb-5">
                                     <img
-                                        src={asset_url + character?.path.icon}
+                                        src={ASSET_URL + character?.path.icon}
                                         alt="Path Icon"
                                         className="h-40 w-40 opacity-20"
                                     />
@@ -247,7 +183,7 @@ const CharacterCard = ({
                                         <div key={skill.id || index} className="flex flex-col items-center">
                                             <div className="relative flex flex-col items-center">
                                                 <img
-                                                    src={asset_url + skill.icon}
+                                                    src={ASSET_URL + skill.icon}
                                                     alt="Skill Icon"
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-neutral-800"
                                                 />
@@ -255,7 +191,7 @@ const CharacterCard = ({
                                                     {skill.level} / {skill.max_level}
                                                 </span>
                                                 <span className="z-10 mt-1.5 truncate text-sm">
-                                                    {skill_types.get(skill.id.slice(-2))}
+                                                    {skillTypes.get(skill.id.slice(-2))}
                                                 </span>
                                             </div>
                                         </div>
@@ -266,7 +202,7 @@ const CharacterCard = ({
                                         <div className="flex flex-col items-center">
                                             <div className="relative flex flex-col items-center">
                                                 <img
-                                                    src={asset_url + character.skill_trees[18].icon}
+                                                    src={ASSET_URL + character.skill_trees[18].icon}
                                                     alt="Skill Icon"
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
                                                 />
@@ -282,7 +218,7 @@ const CharacterCard = ({
                                     )}
                                     <div className="relative flex flex-col items-center">
                                         <img
-                                            src={asset_url + character?.skill_trees[2].icon}
+                                            src={ASSET_URL + character?.skill_trees[2].icon}
                                             alt="Skill Icon"
                                             className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-neutral-800"
                                         />
@@ -290,14 +226,14 @@ const CharacterCard = ({
                                             {character?.skill_trees[2].level} / {character?.skill_trees[2].max_level}
                                         </span>
                                         <span className="z-10 mt-1.5 truncate text-sm">
-                                            {skill_types.get(character?.skill_trees[2].id.slice(-2))}
+                                            {skillTypes.get(character?.skill_trees[2].id.slice(-2))}
                                         </span>
                                     </div>
                                     {character?.path?.id === "Memory" && character?.skill_trees[19] && (
                                         <div className="flex flex-col items-center">
                                             <div className="relative flex flex-col items-center">
                                                 <img
-                                                    src={asset_url + character.skill_trees[19].icon}
+                                                    src={ASSET_URL + character.skill_trees[19].icon}
                                                     alt="Skill Icon"
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
                                                 />
@@ -317,7 +253,7 @@ const CharacterCard = ({
                                         <div key={skill.id || index} className="flex flex-col items-center">
                                             <div className="relative flex flex-col items-center">
                                                 <img
-                                                    src={asset_url + skill.icon}
+                                                    src={ASSET_URL + skill.icon}
                                                     alt="Skill Icon"
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-neutral-800"
                                                 />
@@ -325,7 +261,7 @@ const CharacterCard = ({
                                                     {skill.level} / {skill.max_level}
                                                 </span>
                                                 <span className="z-10 mt-1.5 truncate text-sm">
-                                                    {skill_types.get(skill.id.slice(-2))}
+                                                    {skillTypes.get(skill.id.slice(-2))}
                                                 </span>
                                             </div>
                                         </div>
@@ -343,7 +279,9 @@ const CharacterCard = ({
                                                 path={character.path.id}
                                             />
                                         ))}
-                                        {["Rogue", "Priest"].includes(character?.path?.id) && <MinorTraces />}
+                                        {["Rogue", "Priest"].includes(character?.path?.id) && (
+                                            <MinorTraces skillTrees={character.skill_trees} />
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -351,13 +289,13 @@ const CharacterCard = ({
                                 <div className="flex flex-row items-center justify-center">
                                     <div className="relative flex flex-col items-center">
                                         <img
-                                            src={asset_url + character?.light_cone?.preview}
+                                            src={ASSET_URL + character?.light_cone?.preview}
                                             alt="Light Cone Preview"
                                             className="h-auto w-32 -rotate-13"
                                         />
                                         <img
                                             src={
-                                                asset_url + "icon/deco/Rarity" + character?.light_cone?.rarity + ".png"
+                                                ASSET_URL + "icon/deco/Rarity" + character?.light_cone?.rarity + ".png"
                                             }
                                             alt="Light Cone Rarity Icon"
                                             className={`absolute bottom-0 left-1 h-auto w-36 ${
@@ -378,7 +316,7 @@ const CharacterCard = ({
                                                     fontFamily: character?.light_cone?.rank != 1 && "Times New Roman"
                                                 }}
                                             >
-                                                {roman_num[character?.light_cone?.rank]}
+                                                {ROMAN_NUM[character?.light_cone?.rank]}
                                             </div>
                                             <div>
                                                 <span className="text-lg">Lv. {character?.light_cone?.level}</span>
@@ -395,7 +333,7 @@ const CharacterCard = ({
                                                     className="black-blur flex flex-row items-center rounded-sm pr-1"
                                                 >
                                                     <img
-                                                        src={asset_url + attribute.icon}
+                                                        src={ASSET_URL + attribute.icon}
                                                         alt="Attribute Icon"
                                                         className="h-auto w-6"
                                                     />
@@ -441,7 +379,7 @@ const CharacterCard = ({
                             {character?.property.map((stat, index) => (
                                 <div key={`stat-${index}`} className="flex flex-row items-center justify-between">
                                     <div className="flex flex-row items-center">
-                                        <img src={asset_url + stat.icon} alt="Stat Icon" className="h-auto w-10" />
+                                        <img src={ASSET_URL + stat.icon} alt="Stat Icon" className="h-auto w-10" />
                                         <span>{stat.name}</span>
                                     </div>
                                     <span className="mx-3 grow rounded-sm border border-neutral-300 opacity-50"></span>
@@ -488,7 +426,7 @@ const CharacterCard = ({
                                 <div className="flex flex-row items-center justify-between">
                                     <div className="flex flex-row items-center">
                                         <img
-                                            src={asset_url + "icon/property/IconEnergyRecovery.png"}
+                                            src={ASSET_URL + "icon/property/IconEnergyRecovery.png"}
                                             alt="Stat Icon"
                                             className="h-auto w-10"
                                         />
@@ -536,16 +474,16 @@ const CharacterCard = ({
                   `}
                                 >
                                     <div className="flex">
-                                        <img src={asset_url + relic.icon} alt="Relic Icon" className="h-auto w-20" />
+                                        <img src={ASSET_URL + relic.icon} alt="Relic Icon" className="h-auto w-20" />
                                         <img
-                                            src={asset_url + "icon/deco/Star" + relic.rarity + ".png"}
+                                            src={ASSET_URL + "icon/deco/Star" + relic.rarity + ".png"}
                                             alt="Relic Rarity Icon"
                                             className="absolute bottom-1 h-auto w-20"
                                         />
                                     </div>
                                     <div className="mx-1 flex w-1/6 flex-col items-center justify-center">
                                         <img
-                                            src={asset_url + relic.main_affix.icon}
+                                            src={ASSET_URL + relic.main_affix.icon}
                                             alt="Main Affix Icon"
                                             className="h-auto w-9"
                                         />
@@ -560,7 +498,7 @@ const CharacterCard = ({
                                             <div key={index} className="flex flex-col">
                                                 <div className="flex flex-row items-center">
                                                     <img
-                                                        src={asset_url + sub_affix.icon}
+                                                        src={ASSET_URL + sub_affix.icon}
                                                         alt="Sub Affix Icon"
                                                         className="h-auto w-7"
                                                     />

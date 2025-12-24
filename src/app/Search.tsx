@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { ASSET_URL, SUPPORTED_LANGUAGES } from "@/lib/constants";
 
 export default function Search() {
     const [UID, setUID] = useState("");
@@ -15,17 +16,17 @@ export default function Search() {
         if (!localStorage.getItem("lang")) {
             localStorage.setItem("lang", "en");
         }
-        setSavedUID(localStorage.getItem("uid"));
-        setLang(localStorage.getItem("lang"));
+        setSavedUID(localStorage.getItem("uid") ?? "");
+        setLang(localStorage.getItem("lang") ?? "en");
     }, []);
 
-    const handleKeyDown = e => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && UID) {
             router.push(`/u/${UID}`);
         }
     };
 
-    const handleUIDChange = e => {
+    const handleUIDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (/^\d*$/.test(value) && value.length <= 10) {
             setUID(value);
@@ -51,19 +52,11 @@ export default function Search() {
                     className="focus-ring w-full rounded-lg border-2 border-gray-600 bg-gray-800 px-3 py-2 text-center text-white transition-colors hover:border-gray-500 focus:border-purple-500 focus:bg-gray-900 focus:outline-hidden sm:w-32"
                     value={lang || "en"}
                 >
-                    <option value="cn">简体中文</option>
-                    <option value="cht">繁體中文</option>
-                    <option value="de">Deutsch</option>
-                    <option value="en">English</option>
-                    <option value="es">Español</option>
-                    <option value="fr">Français</option>
-                    <option value="id">Bahasa Indonesia</option>
-                    <option value="jp">日本語</option>
-                    <option value="kr">한국어</option>
-                    <option value="pt">Português</option>
-                    <option value="ru">Русский</option>
-                    <option value="th">ภาษาไทย</option>
-                    <option value="vi">Tiếng Việt</option>
+                    {SUPPORTED_LANGUAGES.map(({ code, name }) => (
+                        <option key={code} value={code}>
+                            {name}
+                        </option>
+                    ))}
                 </select>
                 <div className="flex w-full gap-2 sm:w-auto">
                     <input
@@ -89,7 +82,7 @@ export default function Search() {
                     className="btn gap-2 border border-stone-600 bg-stone-800 px-4 py-2 transition-all hover:border-stone-500"
                 >
                     <Image
-                        src="https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/icon/sign/SettingsAccount.png"
+                        src={`${ASSET_URL}icon/sign/SettingsAccount.png`}
                         alt="Icon Linked Profile"
                         width={24}
                         height={24}

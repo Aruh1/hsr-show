@@ -10,10 +10,10 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import Loading from "./loading";
 import type { ProfileData, Character, SavedBuild } from "@/types";
+import { ASSET_URL, STORAGE_KEYS, RETRY_CONFIG } from "@/lib/constants";
 
 const Profile = () => {
     const router = useRouter();
-    const asset_url = "https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/";
     const [data, setData] = useState<ProfileData | null>(null);
     const [character, setCharacter] = useState<Character | null>(null);
     const [selected, setSelected] = useState<number | null>(0);
@@ -197,7 +197,7 @@ const Profile = () => {
                     <div className="my-5 flex flex-col lg:items-center">
                         <div className="mx-auto flex h-auto w-full max-w-lg flex-col items-center justify-center gap-4 px-4">
                             <Image
-                                src={asset_url + data?.player.avatar.icon}
+                                src={ASSET_URL + data?.player.avatar.icon}
                                 width={120}
                                 height={120}
                                 alt="Avatar Icon"
@@ -241,7 +241,7 @@ const Profile = () => {
                                 <div className="flex flex-row flex-wrap justify-center gap-2">
                                     <button className="btn" onClick={() => router.push("/")}>
                                         <Image
-                                            src={asset_url + "icon/sign/ReplacementIcon.png"}
+                                            src={ASSET_URL + "icon/sign/ReplacementIcon.png"}
                                             alt="Change UID Icon"
                                             width={24}
                                             height={24}
@@ -251,7 +251,7 @@ const Profile = () => {
                                     {savedUID !== uid && (
                                         <button className="btn" onClick={linkUID}>
                                             <Image
-                                                src={asset_url + "icon/sign/FriendAddIcon.png"}
+                                                src={ASSET_URL + "icon/sign/FriendAddIcon.png"}
                                                 alt="UID Linked"
                                                 width={24}
                                                 height={24}
@@ -266,7 +266,7 @@ const Profile = () => {
                                         }
                                     >
                                         <Image
-                                            src={asset_url + "icon/sign/Detail.png"}
+                                            src={ASSET_URL + "icon/sign/Detail.png"}
                                             alt="API Information"
                                             width={24}
                                             height={24}
@@ -281,7 +281,7 @@ const Profile = () => {
                                         }}
                                     >
                                         <Image
-                                            src={asset_url + "icon/sign/TeamIcon.png"}
+                                            src={ASSET_URL + "icon/sign/TeamIcon.png"}
                                             alt="Change UID Icon"
                                             width={24}
                                             height={24}
@@ -314,7 +314,7 @@ const Profile = () => {
                                             <div className="relative flex w-[100px] flex-col">
                                                 <div className="relative">
                                                     <Image
-                                                        src={asset_url + build.character.preview}
+                                                        src={ASSET_URL + build.character.preview}
                                                         alt="Character Preview"
                                                         width={96}
                                                         height={96}
@@ -356,7 +356,7 @@ const Profile = () => {
                                 <div className="flex flex-row flex-wrap justify-center gap-6 p-6 md:flex-nowrap">
                                     {data?.characters.map((character, index) => (
                                         <Image
-                                            src={asset_url + character.icon}
+                                            src={ASSET_URL + character.icon}
                                             alt="Character Preview"
                                             width={96}
                                             height={96}
@@ -405,7 +405,7 @@ const Profile = () => {
                                         onClick={() => saveImage(character.name, customImage ? 1 : 1.5)}
                                     >
                                         <Image
-                                            src={asset_url + "icon/sign/SettingsImageIcon.png"}
+                                            src={ASSET_URL + "icon/sign/SettingsImageIcon.png"}
                                             alt="Save Image Icon"
                                             width={28}
                                             height={28}

@@ -87,7 +87,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
         // Validate inputs
         const uid = validateUID(params.uid);
         const lang = new URL(req.url).searchParams.get("lang") || "en";
-        const force_update = new URL(req.url).searchParams.get("force_update") || true;
+        const force_update = new URL(req.url).searchParams.get("force_update") ?? "true";
 
         // Use the new fetchWithRetry for API calls
         const fetchWithErrorHandling = async (url: string) => {
@@ -122,15 +122,17 @@ export async function GET(req: NextRequest, context: RouteContext) {
             timestamp: new Date().toISOString(),
             powered: "API mihomo: https://api.mihomo.me/"
         });
-    } catch (error) {
+    } catch (error: unknown) {
         // Centralized error handling
         console.error(error);
 
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
         // Differentiate between validation and other errors
-        if (error.message.includes("Invalid UID")) {
+        if (errorMessage.includes("Invalid UID")) {
             return NextResponse.json(
                 {
-                    error: error.message
+                    error: errorMessage
                 },
                 { status: 400 }
             );
@@ -138,7 +140,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
         return NextResponse.json(
             {
-                error: error.message || "Internal Server Error"
+                error: errorMessage
             },
             { status: 500 }
         );
