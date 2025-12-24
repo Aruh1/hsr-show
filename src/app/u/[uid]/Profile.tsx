@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { BsPcDisplay, BsAndroid2, BsApple, BsPlaystation } from "react-icons/bs";
 import Image from "next/image";
 import CharacterCard from "./CharacterCard";
@@ -10,7 +10,7 @@ import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import Loading from "./loading";
 import type { ProfileData, Character, SavedBuild } from "@/types";
-import { ASSET_URL, STORAGE_KEYS, RETRY_CONFIG } from "@/lib/constants";
+import { ASSET_URL } from "@/lib/constants";
 
 const Profile = () => {
     const router = useRouter();
@@ -134,7 +134,7 @@ const Profile = () => {
             toastId: `success-build-saved-${buildName}`
         });
         setBuildName("");
-    }, [character, buildName, savedBuilds]);
+    }, [character, buildName, savedBuilds, data?.player.nickname, data?.player.uid]);
 
     const deleteBuild = useCallback(
         (index: number) => {
@@ -183,7 +183,7 @@ const Profile = () => {
                 });
             });
         },
-        [ref]
+        [uid]
     );
 
     if (!data) {

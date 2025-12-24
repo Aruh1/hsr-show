@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 type StorageValue = string | number | boolean | object | null;
 
@@ -38,12 +38,8 @@ export function useLocalStorage<T extends StorageValue>(
         }
     }, [key, initialValue]);
 
-    const [storedValue, setStoredValue] = useState<T>(initialValue);
-
-    // Read from localStorage on mount
-    useEffect(() => {
-        setStoredValue(readValue());
-    }, [readValue]);
+    // Use lazy initial state to read from localStorage during initialization
+    const [storedValue, setStoredValue] = useState<T>(() => readValue());
 
     // Setter function that updates both state and localStorage
     const setValue = useCallback(
@@ -75,16 +71,15 @@ export function useLocalStorage<T extends StorageValue>(
 export function useMultipleLocalStorage<T extends Record<string, StorageValue>>(
     keys: { key: string; defaultValue: StorageValue }[]
 ): T {
-    const [values, setValues] = useState<T>(() => {
-        const initial: Record<string, StorageValue> = {};
-        keys.forEach(({ key, defaultValue }) => {
-            initial[key] = defaultValue;
-        });
-        return initial as T;
-    });
-
-    useEffect(() => {
-        if (typeof window === "undefined") return;
+    // Load from localStorage during initial state creation to avoid effect-based setState
+    const [values] = useState<T>(() => {
+        if (typeof window === "undefined") {
+            const initial: Record<string, StorageValue> = {};
+            keys.forEach(({ key, defaultValue }) => {
+                initial[key] = defaultValue;
+            });
+            return initial as T;
+        }
 
         const loaded: Record<string, StorageValue> = {};
         keys.forEach(({ key, defaultValue }) => {
@@ -107,8 +102,8 @@ export function useMultipleLocalStorage<T extends Record<string, StorageValue>>(
                 loaded[key] = defaultValue;
             }
         });
-        setValues(loaded as T);
-    }, []);
+        return loaded as T;
+    });
 
     return values;
 }

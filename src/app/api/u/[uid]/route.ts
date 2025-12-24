@@ -193,10 +193,8 @@ interface ApiCharacter {
     [key: string]: unknown;
 }
 
-// Existing processCharacter function
 function processCharacter(character: ApiCharacter) {
-    // Efficient attribute and addition mapping
-    const attributeMap = new Map((character.attributes || []).map(attr => [attr.field, attr]));
+    // Efficient addition mapping for combining with base attributes
     const additionMap = new Map((character.additions || []).map(add => [add.field, add]));
 
     // Optimize attribute combination

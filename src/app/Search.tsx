@@ -2,23 +2,25 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { ASSET_URL, SUPPORTED_LANGUAGES } from "@/lib/constants";
 
 export default function Search() {
     const [UID, setUID] = useState("");
-    const [savedUID, setSavedUID] = useState("");
-    const [lang, setLang] = useState("");
-    const router = useRouter();
-
-    useEffect(() => {
+    // Use lazy initial state to read from localStorage during initialization
+    const [savedUID] = useState(() => {
+        if (typeof window === "undefined") return "";
+        return localStorage.getItem("uid") ?? "";
+    });
+    const [lang, setLang] = useState(() => {
+        if (typeof window === "undefined") return "en";
         if (!localStorage.getItem("lang")) {
             localStorage.setItem("lang", "en");
         }
-        setSavedUID(localStorage.getItem("uid") ?? "");
-        setLang(localStorage.getItem("lang") ?? "en");
-    }, []);
+        return localStorage.getItem("lang") ?? "en";
+    });
+    const router = useRouter();
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && UID) {

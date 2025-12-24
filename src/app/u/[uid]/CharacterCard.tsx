@@ -63,11 +63,6 @@ const CharacterCard = ({
         );
     }, [character.skill_trees]);
 
-    // Check if character has energy recovery stat
-    const hasEnergyRecovery = useMemo(() => {
-        return character.property.some(item => item.icon === "icon/property/IconEnergyRecovery.png");
-    }, [character.property]);
-
     return (
         <div className={`relative min-h-[650px] w-[1400px] rounded-3xl ${blur ? "BG" : "Blur-BG"} overflow-hidden`}>
             <div className="absolute bottom-2 left-4 z-10">
@@ -132,7 +127,7 @@ const CharacterCard = ({
                         {/* Top Section - Character Info */}
                         <div className="flex-shrink-0">
                             <div className="flex flex-row items-center justify-between">
-                                <span className={`${(character?.name).length > 12 ? "text-4xl" : "text-5xl"}`}>
+                                <span className={`${(character?.name ?? "").length > 12 ? "text-4xl" : "text-5xl"}`}>
                                     {character?.name}
                                 </span>
                                 <img
