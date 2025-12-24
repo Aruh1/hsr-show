@@ -2,28 +2,40 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { ASSET_URL, SUPPORTED_LANGUAGES } from "@/lib/constants";
 
+// Helper functions for useSyncExternalStore pattern
+const emptySubscribe = () => () => {};
+const getServerSnapshot = () => true;
+const getClientSnapshot = () => false;
+
+// Helper to get localStorage value safely
+const getLocalStorageValue = (key: string, defaultValue: string): string => {
+    if (typeof window === "undefined") return defaultValue;
+    return localStorage.getItem(key) ?? defaultValue;
+};
+
 export default function Search() {
+    // Use useSyncExternalStore to detect hydration without triggering the lint rule
+    const isServer = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
+
     const [UID, setUID] = useState("");
-    // Initialize with default values for SSR, then update after hydration
-    const [savedUID, setSavedUID] = useState("");
-    const [lang, setLang] = useState("en");
-    const [isHydrated, setIsHydrated] = useState(false);
+    // Initialize state with localStorage values on client, defaults on server
+    const [savedUID] = useState(() => getLocalStorageValue("uid", ""));
+    const [lang, setLang] = useState(() => {
+        const storedLang = getLocalStorageValue("lang", "");
+        if (!storedLang && typeof window !== "undefined") {
+            localStorage.setItem("lang", "en");
+            return "en";
+        }
+        return storedLang || "en";
+    });
     const router = useRouter();
 
-    // Read from localStorage after hydration to avoid SSR mismatch
-    // This is a valid use case for setState in effect - hydration sync
-    useEffect(() => {
-        if (!localStorage.getItem("lang")) {
-            localStorage.setItem("lang", "en");
-        }
-        setSavedUID(localStorage.getItem("uid") ?? "");
-        setLang(localStorage.getItem("lang") ?? "en");
-        setIsHydrated(true);
-    }, []);
+    // isHydrated is now derived from useSyncExternalStore
+    const isHydrated = !isServer;
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && UID) {
