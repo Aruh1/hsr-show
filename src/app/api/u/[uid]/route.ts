@@ -5,58 +5,60 @@ interface RetryConfig {
     baseDelay: number;
     backoffFactor: number;
     jitter: number;
+    timeout: number;
 }
 
-// Retry configuration
+// Retry configuration with timeout
 const RETRY_CONFIG: RetryConfig = {
     maxRetries: 3,
-    baseDelay: 1000, // 1 second initial delay
-    backoffFactor: 2, // Exponential backoff
-    jitter: 0.2 // 20% jitter to spread out retry attempts
+    baseDelay: 1000,
+    backoffFactor: 2,
+    jitter: 0.2,
+    timeout: 10000 // 10 second timeout
 };
 
-// Enhanced fetch with retry mechanism
+// Enhanced fetch with retry mechanism and timeout
 async function fetchWithRetry(
     url: string,
     options: RequestInit = {},
     retryConfig: RetryConfig = RETRY_CONFIG
 ): Promise<Response> {
-    const { maxRetries, baseDelay, backoffFactor, jitter } = retryConfig;
+    const { maxRetries, baseDelay, backoffFactor, jitter, timeout } = retryConfig;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-            const response = await fetch(url, options);
+        // Create abort controller for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-            // Successful response
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
             if (response.ok) {
                 return response;
             }
 
-            // Non-successful response (400-500 range)
             if (attempt === maxRetries) {
-                // Last attempt failed
                 console.error(`Fetch failed after ${maxRetries + 1} attempts. Status: ${response.status}`);
                 throw new Error(`API request failed with status ${response.status}`);
             }
 
-            // Calculate delay with exponential backoff and jitter
             const delay = calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter);
             console.warn(`Attempt ${attempt + 1} failed. Retrying in ${delay}ms`);
-
-            // Wait before next attempt
             await new Promise(resolve => setTimeout(resolve, delay));
         } catch (error) {
-            // Network errors or other fetch failures
+            clearTimeout(timeoutId);
+
             if (attempt === maxRetries) {
                 console.error("Fetch failed after maximum retries:", error);
                 throw error;
             }
 
-            // Calculate delay for network errors
             const delay = calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter);
             console.warn(`Network error on attempt ${attempt + 1}. Retrying in ${delay}ms`);
-
-            // Wait before next attempt
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
@@ -66,12 +68,8 @@ async function fetchWithRetry(
 
 // Calculate exponential backoff with jitter
 function calculateBackoffDelay(baseDelay: number, attempt: number, backoffFactor: number, jitter: number): number {
-    // Calculate base exponential backoff
     const calculatedDelay = baseDelay * Math.pow(backoffFactor, attempt);
-
-    // Add jitter to spread out retry attempts
     const jitterAmount = calculatedDelay * jitter * (Math.random() * 2 - 1);
-
     return Math.round(calculatedDelay + jitterAmount);
 }
 
@@ -81,26 +79,22 @@ interface RouteContext {
 
 export async function GET(req: NextRequest, context: RouteContext) {
     try {
-        // Await params as per Next.js requirements
         const params = await context.params;
 
-        // Validate inputs
+        // Validate inputs - parse URL once
+        const { searchParams } = new URL(req.url);
         const uid = validateUID(params.uid);
-        const lang = new URL(req.url).searchParams.get("lang") || "en";
-        const force_update = new URL(req.url).searchParams.get("force_update") ?? "true";
-
-        // Use the new fetchWithRetry for API calls
-        const fetchWithErrorHandling = async (url: string) => {
-            const response = await fetchWithRetry(url);
-            return response.json();
-        };
+        const lang = searchParams.get("lang") || "en";
+        const force_update = searchParams.get("force_update") ?? "true";
 
         // Concurrent fetches with retry mechanism
         const [data, infodata] = await Promise.all([
-            fetchWithErrorHandling(
+            fetchWithRetry(
                 `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}&is_force_update=${force_update}`
-            ),
-            fetchWithErrorHandling(`https://api.mihomo.me/sr_info/${uid}?lang=${lang}&is_force_update=${force_update}`)
+            ).then(res => res.json()),
+            fetchWithRetry(`https://api.mihomo.me/sr_info/${uid}?lang=${lang}&is_force_update=${force_update}`).then(
+                res => res.json()
+            )
         ]);
 
         // Early validation
@@ -108,46 +102,38 @@ export async function GET(req: NextRequest, context: RouteContext) {
             return NextResponse.json({ error: "No characters found" }, { status: 404 });
         }
 
-        // Memoize and optimize character processing
+        // Process characters
         const processedCharacters = data.characters.map(processCharacter);
-
-        // Update data with processed characters
         data.characters = processedCharacters;
 
-        // Construct enhanced response
-        return NextResponse.json({
-            status: 200,
-            ...data,
-            ...infodata,
-            timestamp: new Date().toISOString(),
-            powered: "API mihomo: https://api.mihomo.me/"
-        });
-    } catch (error: unknown) {
-        // Centralized error handling
-        console.error(error);
-
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-        // Differentiate between validation and other errors
-        if (errorMessage.includes("Invalid UID")) {
-            return NextResponse.json(
-                {
-                    error: errorMessage
-                },
-                { status: 400 }
-            );
-        }
-
+        // Construct response with caching headers
         return NextResponse.json(
             {
-                error: errorMessage
+                status: 200,
+                ...data,
+                detailInfo: infodata.detailInfo,
+                timestamp: new Date().toISOString(),
+                powered: "API mihomo: https://api.mihomo.me/"
             },
-            { status: 500 }
+            {
+                headers: {
+                    "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120"
+                }
+            }
         );
+    } catch (error: unknown) {
+        console.error(error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+        if (errorMessage.includes("Invalid UID")) {
+            return NextResponse.json({ error: errorMessage }, { status: 400 });
+        }
+
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
 
-// Input validation function
+// Input validation
 function validateUID(uid: string): string {
     if (!/^\d{1,10}$/.test(uid)) {
         throw new Error("Invalid UID. Must be a 1-10 digit integer.");
@@ -194,19 +180,17 @@ interface ApiCharacter {
 }
 
 function processCharacter(character: ApiCharacter) {
-    // Efficient addition mapping for combining with base attributes
+    // Efficient addition mapping
     const additionMap = new Map((character.additions || []).map(add => [add.field, add]));
 
-    // Optimize attribute combination
+    // Combine base attributes with additions
     const combinedAttributes = [
-        // Process base attributes with additions
         ...(character.attributes || []).map(attribute => {
             const addition = additionMap.get(attribute.field);
             const baseValue = parseFloat(attribute.display || "0");
             const additionValue = addition ? parseFloat(addition.display || "0") : 0;
             const totalValue = baseValue + additionValue;
 
-            // Remove processed additions
             if (addition) {
                 additionMap.delete(attribute.field);
             }
@@ -229,20 +213,25 @@ function processCharacter(character: ApiCharacter) {
         }))
     ];
 
-    // Efficient relic set processing with Set to remove duplicates
-    const relic_sets = Array.from(new Set((character.relic_sets || []).map(set => set.id))).map(id =>
-        (character.relic_sets || []).find(set => set.id === id)
-    );
+    // Efficient relic set deduplication - single pass
+    const seenRelicIds = new Set<string>();
+    const relic_sets = (character.relic_sets || []).filter(set => {
+        if (seenRelicIds.has(set.id)) return false;
+        seenRelicIds.add(set.id);
+        return true;
+    });
 
-    // Enhanced relic sub-affix processing
+    // Enhanced relic sub-affix processing with clearer logic
     const relics = (character.relics || []).map(relic => ({
         ...relic,
         sub_affix: (relic.sub_affix || []).map(sub_affix => {
             const { count, step } = sub_affix;
-            // More concise distribution calculation
-            const dist = Array(count)
-                .fill(2)
-                .map((_, index) => (index < step - count ? 2 : !step ? 0 : 1));
+            // Calculate distribution: high rolls (2) first, then low rolls (1)
+            const highRolls = step - count;
+            const dist: number[] = [];
+            for (let i = 0; i < count; i++) {
+                dist.push(i < highRolls ? 2 : step === 0 ? 0 : 1);
+            }
             return { ...sub_affix, dist };
         })
     }));
