@@ -128,33 +128,33 @@ const CharacterCard = ({
                         blur ? "Fade-BG" : "Fade-Blur-BG"
                     }`}
                 >
-                    <div className="flex min-h-[650px] w-1/3 flex-col justify-start gap-4 py-3">
-                        <div className="flex h-full flex-col justify-between">
-                            <div className="">
-                                <div className="flex flex-row items-center justify-between">
-                                    <span className={`${(character?.name).length > 12 ? "text-4xl" : "text-5xl"}`}>
-                                        {character?.name}
-                                    </span>
-                                    <img
-                                        src={ASSET_URL + character?.element.icon}
-                                        alt="Element Icon"
-                                        className="h-auto w-14"
-                                    />
-                                </div>
-                                <div className="flex flex-row items-center gap-2">
-                                    <img
-                                        src={ASSET_URL + character?.path.icon}
-                                        alt="Path Icon"
-                                        className="h-auto w-8"
-                                    />
-                                    <span className="text-xl">{character?.path.name}</span>
-                                </div>
-                                <div>
-                                    <span className="text-2xl">Lv. {character?.level}</span>
-                                    <span className="text-xl"> / </span>
-                                    <span className="text-xl text-neutral-400">{character?.promotion * 10 + 20}</span>
-                                </div>
+                    <div className="flex min-h-[650px] w-1/3 flex-col justify-between py-3">
+                        {/* Top Section - Character Info */}
+                        <div className="flex-shrink-0">
+                            <div className="flex flex-row items-center justify-between">
+                                <span className={`${(character?.name).length > 12 ? "text-4xl" : "text-5xl"}`}>
+                                    {character?.name}
+                                </span>
+                                <img
+                                    src={ASSET_URL + character?.element.icon}
+                                    alt="Element Icon"
+                                    className="h-auto w-14"
+                                />
                             </div>
+                            <div className="flex flex-row items-center gap-2">
+                                <img src={ASSET_URL + character?.path.icon} alt="Path Icon" className="h-auto w-8" />
+                                <span className="text-xl">{character?.path.name}</span>
+                            </div>
+                            <div>
+                                <span className="text-2xl">Lv. {character?.level}</span>
+                                <span className="text-xl"> / </span>
+                                <span className="text-xl text-neutral-400">{character?.promotion * 10 + 20}</span>
+                            </div>
+                        </div>
+
+                        {/* Middle Section - Main Container for Traces + Light Cone */}
+                        <div className="flex flex-1 flex-col justify-center gap-4">
+                            {/* Skills/Traces */}
                             <div className="relative mx-4 flex h-auto w-auto flex-row items-center justify-evenly py-2">
                                 <div className="absolute mb-5">
                                     <img
@@ -253,6 +253,8 @@ const CharacterCard = ({
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Major Traces */}
                             {!allTraces && (
                                 <div className="flex items-center justify-center">
                                     <div className={`flex w-full flex-row justify-evenly`}>
@@ -270,6 +272,8 @@ const CharacterCard = ({
                                     </div>
                                 </div>
                             )}
+
+                            {/* Light Cone */}
                             {character?.light_cone ? (
                                 <div className="flex flex-row items-center justify-center">
                                     <div className="relative flex flex-col items-center">
@@ -331,27 +335,29 @@ const CharacterCard = ({
                             ) : (
                                 <span className="flex justify-center">No Light Cone Equipped</span>
                             )}
-                            {allTraces && (
-                                <>
-                                    <hr />
-                                    <div className="flex flex-col items-center gap-1">
-                                        {character?.relic_sets.map((relic_set, index) => (
-                                            <div
-                                                key={relic_set.id || index}
-                                                className="flex w-full flex-row justify-between text-left"
-                                            >
-                                                <span className="text-base">{relic_set.name}</span>
-                                                <div>
-                                                    <span className="black-blur flex w-5 justify-center rounded-sm px-1.5 py-0.5">
-                                                        {relic_set.num}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
                         </div>
+
+                        {/* Bottom Section - Relic Sets */}
+                        {allTraces && (
+                            <div className="flex-shrink-0">
+                                <hr />
+                                <div className="flex flex-col items-center gap-1">
+                                    {character?.relic_sets.map((relic_set, index) => (
+                                        <div
+                                            key={relic_set.id || index}
+                                            className="flex w-full flex-row justify-between text-left"
+                                        >
+                                            <span className="text-base">{relic_set.name}</span>
+                                            <div>
+                                                <span className="black-blur flex w-5 justify-center rounded-sm px-1.5 py-0.5">
+                                                    {relic_set.num}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex h-[650px] w-1/3 flex-col justify-between py-3">
