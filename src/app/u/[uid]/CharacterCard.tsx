@@ -81,7 +81,7 @@ const CharacterCard = ({
             : "w-6 h-6 p-0.5";
         const iconState = icon.level === 0 ? "opacity-30" : "";
         let show = true;
-        if (["Rogue", "Priest", "Mage"].includes(path)) {
+        if (["Rogue", "Priest"].includes(path)) {
             show = !["Point09", "Point12", "Point15", "Point18"].includes(icon.anchor);
         }
 
@@ -173,7 +173,7 @@ const CharacterCard = ({
                         blur ? "Fade-BG" : "Fade-Blur-BG"
                     }`}
                 >
-                    <div className="flex h-[650px] w-1/3 flex-col justify-between py-3">
+                    <div className="flex min-h-[650px] w-1/3 flex-col justify-start gap-4 py-3">
                         <div className="flex h-full flex-col justify-between">
                             <div className="">
                                 <div className="flex flex-row items-center justify-between">
@@ -200,7 +200,7 @@ const CharacterCard = ({
                                     <span className="text-xl text-neutral-400">{character?.promotion * 10 + 20}</span>
                                 </div>
                             </div>
-                            <div className="relative mx-4 flex h-[225px] w-auto flex-row items-center justify-evenly">
+                            <div className="relative mx-4 flex h-auto w-auto flex-row items-center justify-evenly py-2">
                                 <div className="absolute mb-5">
                                     <img
                                         src={asset_url + character?.path.icon}
@@ -227,7 +227,23 @@ const CharacterCard = ({
                                         </div>
                                     ))}
                                 </div>
-                                <div className="flex w-1/3 justify-center">
+                                <div className="flex h-full w-1/3 flex-col justify-center gap-2">
+                                    {character?.path?.id === "Memory" && character?.skill_trees[18] && (
+                                        <div className="flex flex-col items-center">
+                                            <div className="relative flex flex-col items-center">
+                                                <img
+                                                    src={asset_url + character.skill_trees[18].icon}
+                                                    alt="Skill Icon"
+                                                    className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
+                                                />
+                                                <span className="black-blur absolute bottom-4 text-sm">
+                                                    {character.skill_trees[18].level} /{" "}
+                                                    {character.skill_trees[18].max_level}
+                                                </span>
+                                                <span className="z-10 mt-1.5 truncate text-sm">Memosprite Skill</span>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="relative flex flex-col items-center">
                                         <img
                                             src={asset_url + character?.skill_trees[2].icon}
@@ -241,6 +257,22 @@ const CharacterCard = ({
                                             {skill_types.get(character?.skill_trees[2].id.slice(-2))}
                                         </span>
                                     </div>
+                                    {character?.path?.id === "Memory" && character?.skill_trees[19] && (
+                                        <div className="flex flex-col items-center">
+                                            <div className="relative flex flex-col items-center">
+                                                <img
+                                                    src={asset_url + character.skill_trees[19].icon}
+                                                    alt="Skill Icon"
+                                                    className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
+                                                />
+                                                <span className="black-blur absolute bottom-4 text-sm">
+                                                    {character.skill_trees[19].level} /{" "}
+                                                    {character.skill_trees[19].max_level}
+                                                </span>
+                                                <span className="z-10 mt-1.5 truncate text-sm">Memosprite Talent</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex h-full w-1/3 flex-col justify-center gap-8">
                                     {character?.skill_trees.slice(3, 5).map((skill, index) => (
@@ -261,29 +293,6 @@ const CharacterCard = ({
                                         </div>
                                     ))}
                                 </div>
-                                {character?.path?.id === "Memory" && (
-                                    <div className="flex h-full w-1/3 flex-col justify-center gap-8">
-                                        {character?.skill_trees.slice(18, 20).map((skill, index) => (
-                                            <div key={skill.id || index} className="flex flex-col items-center">
-                                                <div className="relative flex flex-col items-center">
-                                                    <img
-                                                        src={asset_url + skill.icon}
-                                                        alt="Skill Icon"
-                                                        className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
-                                                    />
-                                                    <span className="black-blur absolute bottom-4 text-sm">
-                                                        {skill.level} / {skill.max_level}
-                                                    </span>
-                                                    <span className="z-10 mt-1.5 truncate text-sm">
-                                                        {index === 0
-                                                            ? skill_types.get(character?.skill_trees[1].id.slice(-2))
-                                                            : skill_types.get(character?.skill_trees[3].id.slice(-2))}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
                             {!allTraces && (
                                 <div className="flex items-center justify-center">
@@ -296,7 +305,7 @@ const CharacterCard = ({
                                                 path={character.path.id}
                                             />
                                         ))}
-                                        {["Rogue", "Priest", "Mage"].includes(character?.path?.id) && <MinorTraces />}
+                                        {["Rogue", "Priest"].includes(character?.path?.id) && <MinorTraces />}
                                     </div>
                                 </div>
                             )}
