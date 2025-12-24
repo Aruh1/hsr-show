@@ -196,10 +196,8 @@ const Profile = () => {
                 <div className="flex overflow-auto">
                     <div className="my-5 flex flex-col lg:items-center">
                         <div className="mx-auto flex h-auto w-full max-w-lg flex-col items-center justify-center gap-4 px-4">
-                            <Image
+                            <img
                                 src={ASSET_URL + data?.player.avatar.icon}
-                                width={120}
-                                height={120}
                                 alt="Avatar Icon"
                                 className="rounded-full border-2 border-stone-300 bg-stone-500"
                             />
