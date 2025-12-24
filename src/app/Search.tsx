@@ -2,25 +2,28 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ASSET_URL, SUPPORTED_LANGUAGES } from "@/lib/constants";
 
 export default function Search() {
     const [UID, setUID] = useState("");
-    // Use lazy initial state to read from localStorage during initialization
-    const [savedUID] = useState(() => {
-        if (typeof window === "undefined") return "";
-        return localStorage.getItem("uid") ?? "";
-    });
-    const [lang, setLang] = useState(() => {
-        if (typeof window === "undefined") return "en";
+    // Initialize with default values for SSR, then update after hydration
+    const [savedUID, setSavedUID] = useState("");
+    const [lang, setLang] = useState("en");
+    const [isHydrated, setIsHydrated] = useState(false);
+    const router = useRouter();
+
+    // Read from localStorage after hydration to avoid SSR mismatch
+    // This is a valid use case for setState in effect - hydration sync
+    useEffect(() => {
         if (!localStorage.getItem("lang")) {
             localStorage.setItem("lang", "en");
         }
-        return localStorage.getItem("lang") ?? "en";
-    });
-    const router = useRouter();
+        setSavedUID(localStorage.getItem("uid") ?? "");
+        setLang(localStorage.getItem("lang") ?? "en");
+        setIsHydrated(true);
+    }, []);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && UID) {
@@ -52,7 +55,7 @@ export default function Search() {
                         localStorage.setItem("lang", e.target.value);
                     }}
                     className="focus-ring w-full rounded-lg border-2 border-gray-600 bg-gray-800 px-3 py-2 text-center text-white transition-colors hover:border-gray-500 focus:border-purple-500 focus:bg-gray-900 focus:outline-hidden sm:w-32"
-                    value={lang || "en"}
+                    value={lang}
                 >
                     {SUPPORTED_LANGUAGES.map(({ code, name }) => (
                         <option key={code} value={code}>
@@ -78,7 +81,7 @@ export default function Search() {
                     </button>
                 </div>
             </div>
-            {savedUID && (
+            {isHydrated && savedUID && (
                 <Link
                     href={`/u/${savedUID}`}
                     className="btn gap-2 border border-stone-600 bg-stone-800 px-4 py-2 transition-all hover:border-stone-500"
