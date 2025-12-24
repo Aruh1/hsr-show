@@ -26,6 +26,7 @@ const Profile = () => {
     const [customImage, setCustomImage] = useState<string | null>(null);
     const [substatDistribution, setSubstatDistribution] = useState(false);
     const [allTraces, setAllTraces] = useState(false);
+    const [lang, setLang] = useState("en");
     const params = useParams();
     const uid = params.uid as string;
     const nickname = data?.player.nickname;
@@ -38,6 +39,7 @@ const Profile = () => {
         setSubstatDistribution(JSON.parse(localStorage.getItem("substatDistribution") || "false"));
         setAllTraces(JSON.parse(localStorage.getItem("allTraces") || "false"));
         setSavedUID(localStorage.getItem("uid") || "");
+        setLang(localStorage.getItem("lang") || "en");
     }, []);
 
     const linkUID = useCallback(() => {
@@ -55,8 +57,8 @@ const Profile = () => {
 
             for (let attempt = 0; attempt < maxRetries; attempt++) {
                 try {
-                    const lang = localStorage.getItem("lang") || "en";
-                    const res = await fetch(`/api/u/${uid}?lang=${lang}`, {
+                    const currentLang = localStorage.getItem("lang") || "en";
+                    const res = await fetch(`/api/u/${uid}?lang=${currentLang}`, {
                         next: { revalidate: 60 }
                     });
 
@@ -392,6 +394,7 @@ const Profile = () => {
                                             customImage={customImage}
                                             substatDistribution={substatDistribution}
                                             allTraces={allTraces}
+                                            lang={lang}
                                         />
                                     </div>
                                 </div>
