@@ -2,8 +2,7 @@ import { useMemo } from "react";
 import type { Character, SkillTree } from "@/types";
 import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS } from "@/lib/constants";
 import { TraceTree, MinorTraces } from "@/components/TraceComponents";
-import { RelicCard } from "@/components/RelicCard";
-import { StatRow, DefaultEnergyRow } from "@/components/StatRow";
+import { AiFillLock } from "react-icons/ai";
 
 interface CharacterCardProps {
     character: Character;
@@ -117,21 +116,7 @@ const CharacterCard = ({
                                         className="h-auto w-10 scale-[0.9]"
                                     />
                                     <div className="absolute flex h-full w-full items-center justify-center rounded-full bg-neutral-800/70">
-                                        {/* <AiFillLock className="h-5 w-5" /> */}
-                                        <svg
-                                            stroke="currentColor"
-                                            fill="currentColor"
-                                            strokeWidth="0"
-                                            viewBox="0 0 1024 1024"
-                                            className="h-5 w-5"
-                                            height="1em"
-                                            width="1em"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"></path>
-                                            <path d="M688 304H336c-4.4 0-8 3.6-8 8v400c0 4.4 3.6 8 8 8h352c4.4 0 8-3.6 8-8V312c0-4.4-3.6-8-8-8zm-8 408H344V360h336v352z"></path>
-                                            <path d="M512 432c-29.4 0-56 10-77.2 27.2l56.5 56.5c5.3-4.3 12.1-6.9 19.5-6.9 16.6 0 30 13.4 30 30 0 7.4-2.6 14.2-6.9 19.5l56.5 56.5C600.6 594.8 608 578.9 608 560c0-53-43-96-96-96z"></path>
-                                        </svg>
+                                        <AiFillLock className="h-5 w-5" />
                                     </div>
                                 </div>
                             ))}
