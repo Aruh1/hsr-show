@@ -28,7 +28,7 @@ export const TraceTree = ({ iconData, iconMap, path }: TraceTreeProps) => {
         show && (
             <div
                 className={`flex items-center justify-center gap-1
-                    ${!["Rogue", "Priest", "Warrior", "Warlock", "Shaman", "Mage", "Memory"].includes(path) ? "flex-row" : "flex-col"}
+                    ${!["Rogue", "Priest", "Warrior", "Warlock", "Shaman", "Mage", "Memory", "Knight"].includes(path) ? "flex-row" : "flex-col"}
                     ${path === "Knight" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
                     ${path === "Memory" && icon.anchor === "Point08" ? "flex-col items-center justify-center" : ""}
                     ${path === "Memory" && icon.anchor === "Point09" ? "flex-col" : ""}
