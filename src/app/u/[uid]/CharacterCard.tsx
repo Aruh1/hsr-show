@@ -119,8 +119,9 @@ const CharacterCard = ({
                     </div>
                 </div>
                 <div
-                    className={`relative flex min-h-[650px] w-[72%] flex-row items-center gap-3.5 rounded-r-3xl pl-10 ${blur ? "Fade-BG" : "Fade-Blur-BG"
-                        }`}
+                    className={`relative flex min-h-[650px] w-[72%] flex-row items-center gap-3.5 rounded-r-3xl pl-10 ${
+                        blur ? "Fade-BG" : "Fade-Blur-BG"
+                    }`}
                 >
                     <div className="flex min-h-[650px] w-1/3 flex-col justify-between py-3">
                         {/* Top Section - Character Info */}
@@ -281,18 +282,20 @@ const CharacterCard = ({
                                                 ASSET_URL + "icon/deco/Rarity" + character?.light_cone?.rarity + ".png"
                                             }
                                             alt="Light Cone Rarity Icon"
-                                            className={`absolute bottom-0 left-1 h-auto w-36 ${character?.light_cone?.rarity == 4 && "left-2.5"
-                                                }`}
+                                            className={`absolute bottom-0 left-1 h-auto w-36 ${
+                                                character?.light_cone?.rarity == 4 && "left-2.5"
+                                            }`}
                                         />
                                     </div>
                                     <div className="flex w-3/5 flex-col items-center gap-2 text-center">
                                         <span className="text-xl">{character?.light_cone?.name}</span>
                                         <div className="flex items-center gap-2">
                                             <div
-                                                className={`h-6 w-6 rounded-full font-normal ${character?.light_cone?.rank == 5
+                                                className={`h-6 w-6 rounded-full font-normal ${
+                                                    character?.light_cone?.rank == 5
                                                         ? "bg-[#f6ce71] text-black"
                                                         : "bg-neutral-800 text-[#dcc491]"
-                                                    }`}
+                                                }`}
                                                 style={{
                                                     fontFamily: character?.light_cone?.rank != 1 && "Times New Roman"
                                                 }}
@@ -354,8 +357,9 @@ const CharacterCard = ({
 
                     <div className="flex h-[650px] w-1/3 flex-col justify-between py-3">
                         <div
-                            className={`flex w-full flex-col justify-between gap-y-0.5 ${!allTraces && character?.property?.length >= 10 ? "text-base" : "text-lg"
-                                }
+                            className={`flex w-full flex-col justify-between gap-y-0.5 ${
+                                !allTraces && character?.property?.length >= 10 ? "text-base" : "text-lg"
+                            }
               ${!allTraces ? "h-[500px]" : "h-[650px]"}`}
                         >
                             {character?.property.map((stat, index) => (
@@ -385,7 +389,7 @@ const CharacterCard = ({
                                                             </span>
                                                         </>
                                                     ) : stat.icon === "icon/property/IconCriticalChance.png" ||
-                                                        stat.icon === "icon/property/IconCriticalDamage.png" ? (
+                                                      stat.icon === "icon/property/IconCriticalDamage.png" ? (
                                                         <></>
                                                     ) : (
                                                         <>
@@ -405,23 +409,23 @@ const CharacterCard = ({
                             {!character?.property.some(
                                 item => item.icon === "icon/property/IconEnergyRecovery.png"
                             ) && (
-                                    <div className="flex flex-row items-center justify-between">
-                                        <div className="flex flex-row items-center">
-                                            <img
-                                                src={ASSET_URL + "icon/property/IconEnergyRecovery.png"}
-                                                alt="Stat Icon"
-                                                className="h-auto w-10"
-                                            />
-                                            <span>Energy Regeneration Rate</span>
-                                        </div>
-                                        <span className="mx-3 grow rounded-sm border border-neutral-300 opacity-50"></span>
-                                        <div className="flex flex-col text-right">
-                                            <div className="flex flex-row">
-                                                <span>100.0%</span>
-                                            </div>
+                                <div className="flex flex-row items-center justify-between">
+                                    <div className="flex flex-row items-center">
+                                        <img
+                                            src={ASSET_URL + "icon/property/IconEnergyRecovery.png"}
+                                            alt="Stat Icon"
+                                            className="h-auto w-10"
+                                        />
+                                        <span>Energy Regeneration Rate</span>
+                                    </div>
+                                    <span className="mx-3 grow rounded-sm border border-neutral-300 opacity-50"></span>
+                                    <div className="flex flex-col text-right">
+                                        <div className="flex flex-row">
+                                            <span>100.0%</span>
                                         </div>
                                     </div>
-                                )}
+                                </div>
+                            )}
                         </div>
                         {!allTraces && (
                             <>
