@@ -227,6 +227,26 @@ const CharacterCard = ({
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* Elation Path - Skill at index 18 */}
+                                    {character?.path?.id === "Elation" && character?.skill_trees[18] && (
+                                        <div className="flex flex-col items-center">
+                                            <div className="relative flex flex-col items-center">
+                                                <img
+                                                    src={ASSET_URL + character.skill_trees[18].icon}
+                                                    alt="Skill Icon"
+                                                    className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-amber-700"
+                                                />
+                                                <span className="black-blur absolute bottom-4 text-sm">
+                                                    {character.skill_trees[18].level} /{" "}
+                                                    {character.skill_trees[18].max_level}
+                                                </span>
+                                                <span className="z-10 mt-1.5 truncate text-sm">
+                                                    {skillTypes.get(character.skill_trees[18].id.slice(-2))}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex h-full w-1/3 flex-col justify-center gap-8">
                                     {character?.skill_trees.slice(3, 5).map((skill, index) => (
