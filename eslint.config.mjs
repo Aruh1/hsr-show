@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import nextPlugin from "@next/eslint-plugin-next";
 import reactPlugin from "eslint-plugin-react";
 import hooksPlugin from "eslint-plugin-react-hooks";
+import globals from "globals";
 
 export default tseslint.config(
     js.configs.recommended,
@@ -25,7 +26,15 @@ export default tseslint.config(
         },
         settings: {
             react: {
-                version: "detect"
+                version: "19.0"
+            }
+        }
+    },
+    {
+        files: ["next.config.js", "postcss.config.js", "tailwind.config.js"],
+        languageOptions: {
+            globals: {
+                ...globals.node
             }
         }
     },
