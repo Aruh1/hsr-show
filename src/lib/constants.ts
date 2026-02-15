@@ -31,6 +31,22 @@ export const MEMOSPRITE_LABELS: Record<string, { skill: string; talent: string }
     vi: { skill: "Chiến Kỹ Linh Hồn Ký Ức", talent: "Thiên Phú Linh Hồn Ký Ức" }
 } as const;
 
+export const STAT_LABELS: Record<string, { err: string }> = {
+    en: { err: "Energy Regeneration Rate" },
+    cn: { err: "能量恢复效率" },
+    cht: { err: "能量恢復效率" },
+    de: { err: "Energie-Wiederherstellungsrate" },
+    es: { err: "Recuperación de Energía" },
+    fr: { err: "Taux de régénération d'énergie" },
+    id: { err: "Energy Regeneration Rate" },
+    jp: { err: "EP回復効率" },
+    kr: { err: "에너지 회복효율" },
+    pt: { err: "Taxa de Regeneração de Energia" },
+    ru: { err: "Скорость восстановления Энергии" },
+    th: { err: "อัตราการฟื้นฟูพลังงาน" },
+    vi: { err: "Tỷ Lệ Hồi Năng Lượng" }
+} as const;
+
 // Server endpoints for API status checks
 export const SERVER_ENDPOINTS: Record<string, { url: string }> = {
     "Official-USA": { url: "/api/u/600000006" },

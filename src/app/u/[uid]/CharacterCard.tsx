@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { Character, SkillTree } from "@/types";
-import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS } from "@/lib/constants";
+import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS, STAT_LABELS } from "@/lib/constants";
 import { TraceTree, MinorTraces } from "@/components/TraceComponents";
 import { AiFillLock } from "react-icons/ai";
 
@@ -33,7 +33,7 @@ const CharacterCard = ({
 }: CharacterCardProps) => {
     // Get localized labels for Memosprite
     const localizedLabels = MEMOSPRITE_LABELS[lang] || MEMOSPRITE_LABELS["en"];
-
+    const statLabels = STAT_LABELS[lang] || STAT_LABELS["en"];
     // Memoize skill type map - only recompute when skills change
     const skillTypes = useMemo(() => {
         const map = new Map<string, string>();
@@ -436,7 +436,7 @@ const CharacterCard = ({
                                             alt="Stat Icon"
                                             className="h-auto w-10"
                                         />
-                                        <span>Energy Regeneration Rate</span>
+                                        <span>{statLabels.err}</span>
                                     </div>
                                     <span className="mx-3 grow rounded-sm border border-neutral-300 opacity-50"></span>
                                     <div className="flex flex-col text-right">
