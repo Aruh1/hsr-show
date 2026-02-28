@@ -38,7 +38,7 @@
         "@eslint/eslintrc": "^3.3.4",
         "@eslint/js": "^10.0.1",
         "@next/eslint-plugin-next": "^16.1.6",
-        "@types/node": "25.2.3",
+        "@types/node": "25.3.2",
         "@types/react": "^19.2.14",
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-react-hooks": "^7.0.1",
@@ -46,5 +46,8 @@
         "prettier": "^3.8.1",
         "prettier-plugin-tailwindcss": "^0.7.2",
         "typescript-eslint": "^8.56.1"
+    },
+    "overrides": {
+        "brace-expansion": "^2.0.1"
     }
 }
