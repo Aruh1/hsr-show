@@ -22,6 +22,9 @@ function getCached(key: string): unknown | null {
         cache.delete(key);
         return null;
     }
+    // Re-insert to mark as recently used for LRU behavior
+    cache.delete(key);
+    cache.set(key, entry);
     return entry.data;
 }
 
@@ -109,7 +112,8 @@ export async function GET(req: NextRequest, context: RouteContext) {
         // Use nextUrl — already parsed, no need to create new URL
         const uid = validateUID(params.uid);
         const lang = validateLang(req.nextUrl.searchParams.get("lang"));
-        const forceUpdate = req.nextUrl.searchParams.get("force_update") ?? "true";
+        // Sanitize force_update: only accept "true", default to "false" (caching enabled)
+        const forceUpdate = req.nextUrl.searchParams.get("force_update") === "true" ? "true" : "false";
 
         // Check cache (bypass on force_update=true)
         const cacheKey = `${uid}:${lang}`;
@@ -122,14 +126,18 @@ export async function GET(req: NextRequest, context: RouteContext) {
             }
         }
 
+        // Build upstream URLs with encoded params to prevent injection
+        const parsedUrl = encodeURIComponent(uid);
+        const parsedLang = encodeURIComponent(lang);
+        const infoUrl = `https://api.mihomo.me/sr_info_parsed/${parsedUrl}?lang=${parsedLang}&is_force_update=${forceUpdate}`;
+        const rawUrl = `https://api.mihomo.me/sr_info/${parsedUrl}?lang=${parsedLang}&is_force_update=${forceUpdate}`;
+
         // Concurrent upstream fetches — detailInfo is non-blocking
         const [data, detailInfo] = await Promise.all([
-            fetchWithRetry(
-                `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}&is_force_update=${forceUpdate}`
-            ).then(res => res.json()),
+            fetchWithRetry(infoUrl).then(res => res.json()),
 
             // Secondary call: gracefully degrade if it fails
-            fetchWithRetry(`https://api.mihomo.me/sr_info/${uid}?lang=${lang}&is_force_update=${forceUpdate}`)
+            fetchWithRetry(rawUrl)
                 .then(res => res.json())
                 .then(json => json.detailInfo ?? { platform: "unknown" })
                 .catch(() => ({ platform: "unknown" }))
