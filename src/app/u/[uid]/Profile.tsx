@@ -47,7 +47,7 @@ const Profile = () => {
     const params = useParams();
     const uid = params.uid as string;
 
-    // Batch all localStorage reads into a single lazy init — avoids 6 separate re-renders
+    // Safe to use lazy init — this "use client" component only renders client-side
     const [settings, setSettings] = useState<ProfileSettings>(() => ({
         hideUID: getLocalStorageBool("hideUID", false),
         blur: getLocalStorageBool("backgroundBlur", false),
