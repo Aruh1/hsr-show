@@ -45,21 +45,24 @@ export function useLocalStorage<T extends StorageValue>(
     const setValue = useCallback(
         (value: T | ((prev: T) => T)) => {
             try {
-                const valueToStore = value instanceof Function ? value(storedValue) : value;
-                setStoredValue(valueToStore);
+                setStoredValue(prev => {
+                    const valueToStore = value instanceof Function ? value(prev) : value;
 
-                if (typeof window !== "undefined") {
-                    if (typeof valueToStore === "object") {
-                        localStorage.setItem(key, JSON.stringify(valueToStore));
-                    } else {
-                        localStorage.setItem(key, String(valueToStore));
+                    if (typeof window !== "undefined") {
+                        if (typeof valueToStore === "object") {
+                            localStorage.setItem(key, JSON.stringify(valueToStore));
+                        } else {
+                            localStorage.setItem(key, String(valueToStore));
+                        }
                     }
-                }
+
+                    return valueToStore;
+                });
             } catch (error) {
                 console.warn(`Error setting localStorage key "${key}":`, error);
             }
         },
-        [key, storedValue]
+        [key]
     );
 
     return [storedValue, setValue];

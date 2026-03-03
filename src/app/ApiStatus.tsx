@@ -55,11 +55,15 @@ export default function ApiStatus() {
     }, []);
 
     const checkAllServers = useCallback(() => {
+        // Batch all loading state updates into a single setState
+        setApiStatuses(prev => {
+            const updated = { ...prev };
+            Object.keys(SERVER_ENDPOINTS).forEach(server => {
+                updated[server] = { ...prev[server], isLoading: true };
+            });
+            return updated;
+        });
         Object.entries(SERVER_ENDPOINTS).forEach(([server, endpoint]) => {
-            setApiStatuses(prev => ({
-                ...prev,
-                [server]: { ...prev[server], isLoading: true }
-            }));
             fetchWithRetry(endpoint.url, server);
         });
     }, [fetchWithRetry]);

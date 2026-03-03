@@ -1,5 +1,3 @@
-"use client";
-
 import { AiOutlineGithub } from "react-icons/ai";
 import { BsDiscord } from "react-icons/bs";
 import { SiKofi } from "react-icons/si";
@@ -7,7 +5,6 @@ import Link from "next/link";
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
-
     return (
         <footer className="mx-auto max-w-3xl px-4 py-4 sm:px-6 md:max-w-5xl">
             <hr className="mb-4 h-px w-full border-0 bg-white/30" />
