@@ -5,6 +5,9 @@
 // CDN URL for Star Rail resources
 export const ASSET_URL = "https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/";
 
+// Base URL for the site
+export const BASE_URL = "https://hsr.pololer.my.id";
+
 // Roman numeral mapping for light cone ranks
 export const ROMAN_NUM: Record<number, string> = {
     1: "I",

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import type { Character, SkillTree } from "@/types";
 import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS, STAT_LABELS } from "@/lib/constants";
 import { TraceTree, MinorTraces } from "@/components/TraceComponents";
@@ -539,4 +539,4 @@ const CharacterCard = ({
     );
 };
 
-export default CharacterCard;
+export default memo(CharacterCard);
