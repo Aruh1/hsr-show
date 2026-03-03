@@ -62,7 +62,8 @@ export const RETRY_CONFIG = {
     maxRetries: 3,
     baseDelay: 1000,
     backoffFactor: 2,
-    jitter: 0.2
+    jitter: 0.2,
+    timeout: 10000
 } as const;
 
 // API status retry config (less aggressive)

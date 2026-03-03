@@ -1,64 +1,70 @@
 import { NextResponse, NextRequest } from "next/server";
+import { RETRY_CONFIG, SUPPORTED_LANGUAGES } from "@/lib/constants";
+import { processCharacter } from "@/lib/processCharacter";
 
-interface RetryConfig {
-    maxRetries: number;
-    baseDelay: number;
-    backoffFactor: number;
-    jitter: number;
-    timeout: number;
+// ---------------------------------------------------------------------------
+// In-memory LRU cache with TTL
+// ---------------------------------------------------------------------------
+const CACHE_TTL_MS = 60_000; // 60 seconds
+const CACHE_MAX_SIZE = 200;
+
+interface CacheEntry {
+    data: unknown;
+    expiry: number;
 }
 
-// Retry configuration with timeout
-const RETRY_CONFIG: RetryConfig = {
-    maxRetries: 3,
-    baseDelay: 1000,
-    backoffFactor: 2,
-    jitter: 0.2,
-    timeout: 10000 // 10 second timeout
-};
+const cache = new Map<string, CacheEntry>();
 
-// Enhanced fetch with retry mechanism and timeout
-async function fetchWithRetry(
-    url: string,
-    options: RequestInit = {},
-    retryConfig: RetryConfig = RETRY_CONFIG
-): Promise<Response> {
-    const { maxRetries, baseDelay, backoffFactor, jitter, timeout } = retryConfig;
+function getCached(key: string): unknown | null {
+    const entry = cache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiry) {
+        cache.delete(key);
+        return null;
+    }
+    // Re-insert to mark as recently used for LRU behavior
+    cache.delete(key);
+    cache.set(key, entry);
+    return entry.data;
+}
+
+function setCache(key: string, data: unknown): void {
+    // Evict oldest entries when capacity is exceeded
+    if (cache.size >= CACHE_MAX_SIZE) {
+        const oldestKey = cache.keys().next().value;
+        if (oldestKey) cache.delete(oldestKey);
+    }
+    cache.set(key, { data, expiry: Date.now() + CACHE_TTL_MS });
+}
+
+// ---------------------------------------------------------------------------
+// Retry-capable fetch with AbortController timeout
+// ---------------------------------------------------------------------------
+async function fetchWithRetry(url: string, options: RequestInit = {}): Promise<Response> {
+    const { maxRetries, baseDelay, backoffFactor, jitter, timeout } = RETRY_CONFIG;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        // Create abort controller for timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
 
         try {
-            const response = await fetch(url, {
-                ...options,
-                signal: controller.signal
-            });
+            const response = await fetch(url, { ...options, signal: controller.signal });
             clearTimeout(timeoutId);
 
-            if (response.ok) {
-                return response;
-            }
+            if (response.ok) return response;
 
             if (attempt === maxRetries) {
-                console.error(`Fetch failed after ${maxRetries + 1} attempts. Status: ${response.status}`);
                 throw new Error(`API request failed with status ${response.status}`);
             }
 
             const delay = calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter);
-            console.warn(`Attempt ${attempt + 1} failed. Retrying in ${delay}ms`);
             await new Promise(resolve => setTimeout(resolve, delay));
         } catch (error) {
             clearTimeout(timeoutId);
 
-            if (attempt === maxRetries) {
-                console.error("Fetch failed after maximum retries:", error);
-                throw error;
-            }
+            if (attempt === maxRetries) throw error;
 
             const delay = calculateBackoffDelay(baseDelay, attempt, backoffFactor, jitter);
-            console.warn(`Network error on attempt ${attempt + 1}. Retrying in ${delay}ms`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
@@ -66,13 +72,35 @@ async function fetchWithRetry(
     throw new Error("Unexpected error in fetchWithRetry");
 }
 
-// Calculate exponential backoff with jitter
 function calculateBackoffDelay(baseDelay: number, attempt: number, backoffFactor: number, jitter: number): number {
     const calculatedDelay = baseDelay * Math.pow(backoffFactor, attempt);
     const jitterAmount = calculatedDelay * jitter * (Math.random() * 2 - 1);
     return Math.round(calculatedDelay + jitterAmount);
 }
 
+// ---------------------------------------------------------------------------
+// Supported language codes set (fast lookup)
+// ---------------------------------------------------------------------------
+const VALID_LANGUAGES: Set<string> = new Set(SUPPORTED_LANGUAGES.map(l => l.code));
+
+function validateLang(lang: string | null): string {
+    if (lang && VALID_LANGUAGES.has(lang)) return lang;
+    return "en";
+}
+
+// ---------------------------------------------------------------------------
+// UID validation
+// ---------------------------------------------------------------------------
+function validateUID(uid: string): string {
+    if (!/^\d{1,10}$/.test(uid)) {
+        throw new Error("Invalid UID. Must be a 1-10 digit integer.");
+    }
+    return uid;
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
 interface RouteContext {
     params: Promise<{ uid: string }>;
 }
@@ -81,20 +109,38 @@ export async function GET(req: NextRequest, context: RouteContext) {
     try {
         const params = await context.params;
 
-        // Validate inputs - parse URL once
-        const { searchParams } = new URL(req.url);
+        // Use nextUrl — already parsed, no need to create new URL
         const uid = validateUID(params.uid);
-        const lang = searchParams.get("lang") || "en";
-        const force_update = searchParams.get("force_update") ?? "true";
+        const lang = validateLang(req.nextUrl.searchParams.get("lang"));
+        // Sanitize force_update: only accept "true", default to "false" (caching enabled)
+        const forceUpdate = req.nextUrl.searchParams.get("force_update") === "true" ? "true" : "false";
 
-        // Concurrent fetches with retry mechanism
-        const [data, infodata] = await Promise.all([
-            fetchWithRetry(
-                `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}&is_force_update=${force_update}`
-            ).then(res => res.json()),
-            fetchWithRetry(`https://api.mihomo.me/sr_info/${uid}?lang=${lang}&is_force_update=${force_update}`).then(
-                res => res.json()
-            )
+        // Check cache (bypass on force_update=true)
+        const cacheKey = `${uid}:${lang}`;
+        if (forceUpdate !== "true") {
+            const cached = getCached(cacheKey);
+            if (cached) {
+                return NextResponse.json(cached, {
+                    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" }
+                });
+            }
+        }
+
+        // Build upstream URLs with encoded params to prevent injection
+        const parsedUrl = encodeURIComponent(uid);
+        const parsedLang = encodeURIComponent(lang);
+        const infoUrl = `https://api.mihomo.me/sr_info_parsed/${parsedUrl}?lang=${parsedLang}&is_force_update=${forceUpdate}`;
+        const rawUrl = `https://api.mihomo.me/sr_info/${parsedUrl}?lang=${parsedLang}&is_force_update=${forceUpdate}`;
+
+        // Concurrent upstream fetches — detailInfo is non-blocking
+        const [data, detailInfo] = await Promise.all([
+            fetchWithRetry(infoUrl).then(res => res.json()),
+
+            // Secondary call: gracefully degrade if it fails
+            fetchWithRetry(rawUrl)
+                .then(res => res.json())
+                .then(json => json.detailInfo ?? { platform: "unknown" })
+                .catch(() => ({ platform: "unknown" }))
         ]);
 
         // Early validation
@@ -103,24 +149,21 @@ export async function GET(req: NextRequest, context: RouteContext) {
         }
 
         // Process characters
-        const processedCharacters = data.characters.map(processCharacter);
-        data.characters = processedCharacters;
+        data.characters = data.characters.map(processCharacter);
 
-        // Construct response with caching headers
-        return NextResponse.json(
-            {
-                status: 200,
-                ...data,
-                detailInfo: infodata.detailInfo,
-                timestamp: new Date().toISOString(),
-                powered: "API mihomo: https://api.mihomo.me/"
-            },
-            {
-                headers: {
-                    "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120"
-                }
-            }
-        );
+        const responseBody = {
+            ...data,
+            detailInfo,
+            timestamp: new Date().toISOString(),
+            powered: "API mihomo: https://api.mihomo.me/"
+        };
+
+        // Populate cache for subsequent requests
+        setCache(cacheKey, responseBody);
+
+        return NextResponse.json(responseBody, {
+            headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" }
+        });
     } catch (error: unknown) {
         console.error(error);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -131,115 +174,4 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
-}
-
-// Input validation
-function validateUID(uid: string): string {
-    if (!/^\d{1,10}$/.test(uid)) {
-        throw new Error("Invalid UID. Must be a 1-10 digit integer.");
-    }
-    return uid;
-}
-
-interface ApiAttribute {
-    field: string;
-    name: string;
-    icon: string;
-    value: number;
-    display: string;
-    percent?: boolean;
-}
-
-interface ApiSubAffix {
-    field: string;
-    name: string;
-    icon: string;
-    value: number;
-    display: string;
-    count: number;
-    step: number;
-}
-
-interface ApiRelic {
-    id: string;
-    sub_affix: ApiSubAffix[];
-    [key: string]: unknown;
-}
-
-interface ApiRelicSet {
-    id: string;
-    [key: string]: unknown;
-}
-
-interface ApiCharacter {
-    attributes: ApiAttribute[];
-    additions: ApiAttribute[];
-    relics: ApiRelic[];
-    relic_sets: ApiRelicSet[];
-    [key: string]: unknown;
-}
-
-function processCharacter(character: ApiCharacter) {
-    // Efficient addition mapping
-    const additionMap = new Map((character.additions || []).map(add => [add.field, add]));
-
-    // Combine base attributes with additions
-    const combinedAttributes = [
-        ...(character.attributes || []).map(attribute => {
-            const addition = additionMap.get(attribute.field);
-            const baseValue = parseFloat(attribute.display || "0");
-            const additionValue = addition ? parseFloat(addition.display || "0") : 0;
-            const totalValue = baseValue + additionValue;
-
-            if (addition) {
-                additionMap.delete(attribute.field);
-            }
-
-            return {
-                name: attribute.name,
-                icon: attribute.icon,
-                base: baseValue,
-                addition: addition?.value || 0,
-                value: addition ? attribute.value + addition.value : attribute.value,
-                display: totalValue.toFixed(attribute.percent ? 1 : 0) + (attribute.percent ? "%" : "")
-            };
-        }),
-        // Add remaining unmatched additions
-        ...[...additionMap.values()].map(addition => ({
-            name: addition.name,
-            icon: addition.icon,
-            value: addition.value,
-            display: addition.display
-        }))
-    ];
-
-    // Efficient relic set deduplication - single pass
-    const seenRelicIds = new Set<string>();
-    const relic_sets = (character.relic_sets || []).filter(set => {
-        if (seenRelicIds.has(set.id)) return false;
-        seenRelicIds.add(set.id);
-        return true;
-    });
-
-    // Enhanced relic sub-affix processing with clearer logic
-    const relics = (character.relics || []).map(relic => ({
-        ...relic,
-        sub_affix: (relic.sub_affix || []).map(sub_affix => {
-            const { count, step } = sub_affix;
-            // Calculate distribution: high rolls (2) first, then low rolls (1)
-            const highRolls = step - count;
-            const dist: number[] = [];
-            for (let i = 0; i < count; i++) {
-                dist.push(i < highRolls ? 2 : step === 0 ? 0 : 1);
-            }
-            return { ...sub_affix, dist };
-        })
-    }));
-
-    return {
-        ...character,
-        property: combinedAttributes,
-        relic_sets,
-        relics
-    };
 }
