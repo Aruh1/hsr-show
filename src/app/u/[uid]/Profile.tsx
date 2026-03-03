@@ -119,13 +119,16 @@ const Profile = () => {
     }, [platform]);
 
     // Setting toggle helper — updates state + localStorage in one call
-    const toggleSetting = useCallback((key: keyof ProfileSettings, storageKey: string) => {
-        setSettings(prev => {
-            const newValue = !prev[key];
-            localStorage.setItem(storageKey, String(newValue));
-            return { ...prev, [key]: newValue };
-        });
-    }, []);
+    const toggleSetting = useCallback(
+        (key: "hideUID" | "blur" | "substatDistribution" | "allTraces", storageKey: string) => {
+            setSettings(prev => {
+                const newValue = !prev[key];
+                localStorage.setItem(storageKey, String(newValue));
+                return { ...prev, [key]: newValue };
+            });
+        },
+        []
+    );
 
     const linkUID = useCallback(() => {
         localStorage.setItem("uid", uid);
