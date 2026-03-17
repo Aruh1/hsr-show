@@ -738,7 +738,7 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
  * Generates a default profile based on the character's path and element.
  * Used as fallback when no explicit profile exists.
  */
-function generateDefaultProfile(characterId: string, elementId: string, pathId: string): CharacterProfile {
+function generateDefaultProfile(_characterId: string, elementId: string, pathId: string): CharacterProfile {
     const elementDmgField = ELEMENT_TO_DMG_FIELD[elementId] ?? "physical_dmg";
 
     // DPS paths (includes Remembrance/Memory which uses the same build template)
