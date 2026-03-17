@@ -260,6 +260,7 @@ export interface ProfileSettings {
     blur: boolean;
     substatDistribution: boolean;
     allTraces: boolean;
+    dpsScore: boolean;
     lang: string;
 }
 
