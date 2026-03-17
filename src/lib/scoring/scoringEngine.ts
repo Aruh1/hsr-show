@@ -5,12 +5,18 @@ import { estimateDps } from "./dpsEstimator";
 import { rollValueAtQuality, maxRollValue, MIHOMO_TYPE_TO_FIELD } from "./substats";
 import { getGrade } from "./grades";
 
+interface BaseStats {
+    atk: number;
+    hp: number;
+    def: number;
+}
+
 /**
  * Main entry point: computes the full DPS score for a character.
  */
 export function calculateCharacterScore(character: Character): CharacterScoreOutput {
-    const profile = getCharacterProfile(character.id, character.element.id, character.path.id);
     const profileFound = character.id in CHARACTER_PROFILES;
+    const profile = getCharacterProfile(character.id, character.element.id, character.path.id);
 
     if (!character.relics.length) {
         return {
@@ -24,30 +30,37 @@ export function calculateCharacterScore(character: Character): CharacterScoreOut
                 gradeColor: "text-neutral-500"
             },
             relics: [],
-            profileFound: false
+            profileFound
         };
     }
 
+    // Build shared lookups once
+    const statsMap = new Map(character.statistics.map(s => [s.field, s.value]));
+    const baseStats: BaseStats = {
+        atk: character.attributes.find(a => a.field === "atk")?.value ?? 0,
+        hp: character.attributes.find(a => a.field === "hp")?.value ?? 0,
+        def: character.attributes.find(a => a.field === "def")?.value ?? 0
+    };
+
     // 1. Extract actual stats from character data
-    const originalStats = extractStats(character, profile);
+    const originalStats = buildComputedStats(statsMap, profile);
     const originalSimScore = estimateDps(originalStats, profile.skillMultiplier);
 
     // 2. Baseline: stats with zero substat contribution
-    const baselineStats = extractBaselineStats(character, profile);
+    const baselineStats = extractBaselineStats(character, profile, statsMap, baseStats);
     const baselineSimScore = estimateDps(baselineStats, profile.skillMultiplier);
 
     // 3. Benchmark: optimal substats at quality=0.8, 48 roll budget
-    const benchmarkStats = calculateOptimalStats(character, profile, baselineStats, 0.8, 48);
+    const benchmarkStats = calculateOptimalStats(profile, baselineStats, baseStats, 0.8, 48);
     const benchmarkSimScore = estimateDps(benchmarkStats, profile.skillMultiplier);
 
     // 4. Perfection: optimal substats at quality=1.0, 54 roll budget
-    const perfectionStats = calculateOptimalStats(character, profile, baselineStats, 1.0, 54);
+    const perfectionStats = calculateOptimalStats(profile, baselineStats, baseStats, 1.0, 54);
     const perfectionSimScore = estimateDps(perfectionStats, profile.skillMultiplier);
 
     // 5. Piecewise linear interpolation
     let percent: number;
     if (perfectionSimScore <= benchmarkSimScore) {
-        // Edge case: prevent division by zero
         percent = originalSimScore >= benchmarkSimScore ? 1.0 : 0.5;
     } else if (originalSimScore >= benchmarkSimScore) {
         percent = 1.0 + (originalSimScore - benchmarkSimScore) / (perfectionSimScore - benchmarkSimScore);
@@ -84,11 +97,9 @@ export function calculateCharacterScore(character: Character): CharacterScoreOut
 }
 
 /**
- * Extract current total stats from the character's statistics array.
+ * Build ComputedStats from a stats map.
  */
-function extractStats(character: Character, profile: CharacterProfile): ComputedStats {
-    const statsMap = new Map(character.statistics.map(s => [s.field, s.value]));
-
+function buildComputedStats(statsMap: Map<string, number>, profile: CharacterProfile): ComputedStats {
     return {
         scalingStatValue: statsMap.get(profile.scalingStat) ?? 0,
         critRate: statsMap.get("crit_rate") ?? 0.05,
@@ -96,66 +107,64 @@ function extractStats(character: Character, profile: CharacterProfile): Computed
         elementDmgBonus: statsMap.get(profile.elementDmgField) ?? 0,
         speed: statsMap.get("spd") ?? 100
     };
-}
-
-/**
- * Get a character's base stat value from the attributes array.
- */
-function getBaseStatValue(character: Character, field: string): number {
-    const attr = character.attributes.find(a => a.field === field);
-    return attr?.value ?? 0;
 }
 
 /**
  * Calculate baseline stats by subtracting all substat contributions from total stats.
  */
-function extractBaselineStats(character: Character, profile: CharacterProfile): ComputedStats {
-    const statsMap = new Map(character.statistics.map(s => [s.field, s.value]));
-    const baseAtk = getBaseStatValue(character, "atk");
-    const baseHp = getBaseStatValue(character, "hp");
-    const baseDef = getBaseStatValue(character, "def");
+function extractBaselineStats(
+    character: Character,
+    profile: CharacterProfile,
+    statsMap: Map<string, number>,
+    baseStats: BaseStats
+): ComputedStats {
+    // Clone the map to avoid mutating the shared one
+    const workingMap = new Map(statsMap);
 
-    // Subtract all substat contributions
+    // Aggregate all substat contributions first, then subtract
+    const substatTotals = new Map<string, number>();
     for (const relic of character.relics) {
         for (const sub of relic.sub_affix) {
-            const subField = MIHOMO_TYPE_TO_FIELD[sub.type];
-            if (!subField) continue;
+            if (!MIHOMO_TYPE_TO_FIELD[sub.type]) continue;
 
-            // Percentage substats for ATK/HP/DEF contribute scaledValue to the base stat total
+            let field: string;
+            let contribution: number;
+
             if (sub.type === "HPAddedRatio") {
-                statsMap.set("hp", (statsMap.get("hp") ?? 0) - sub.value * baseHp);
+                field = "hp";
+                contribution = sub.value * baseStats.hp;
             } else if (sub.type === "AttackAddedRatio") {
-                statsMap.set("atk", (statsMap.get("atk") ?? 0) - sub.value * baseAtk);
+                field = "atk";
+                contribution = sub.value * baseStats.atk;
             } else if (sub.type === "DefenceAddedRatio") {
-                statsMap.set("def", (statsMap.get("def") ?? 0) - sub.value * baseDef);
+                field = "def";
+                contribution = sub.value * baseStats.def;
             } else {
-                // Flat or direct-addition stats (hp, atk, def, spd, crit_rate, crit_dmg, etc.)
-                const field = sub.field;
-                statsMap.set(field, (statsMap.get(field) ?? 0) - sub.value);
+                field = sub.field;
+                contribution = sub.value;
             }
+
+            substatTotals.set(field, (substatTotals.get(field) ?? 0) + contribution);
         }
     }
 
-    return {
-        scalingStatValue: statsMap.get(profile.scalingStat) ?? 0,
-        critRate: statsMap.get("crit_rate") ?? 0.05,
-        critDmg: statsMap.get("crit_dmg") ?? 0.5,
-        elementDmgBonus: statsMap.get(profile.elementDmgField) ?? 0,
-        speed: statsMap.get("spd") ?? 100
-    };
+    // Subtract aggregated totals
+    for (const [field, total] of substatTotals) {
+        workingMap.set(field, (workingMap.get(field) ?? 0) - total);
+    }
+
+    return buildComputedStats(workingMap, profile);
 }
 
 /**
- * Apply a single substat roll to a ComputedStats snapshot (immutable).
+ * Apply a single substat roll to ComputedStats (immutable).
  */
 function applySubstatRoll(
     stats: ComputedStats,
     profile: CharacterProfile,
     field: SubstatField,
     rollVal: number,
-    baseAtk: number,
-    baseHp: number,
-    baseDef: number
+    baseStats: BaseStats
 ): ComputedStats {
     const result = { ...stats };
 
@@ -164,19 +173,19 @@ function applySubstatRoll(
             if (profile.scalingStat === "atk") result.scalingStatValue += rollVal;
             break;
         case "atk_":
-            if (profile.scalingStat === "atk") result.scalingStatValue += rollVal * baseAtk;
+            if (profile.scalingStat === "atk") result.scalingStatValue += rollVal * baseStats.atk;
             break;
         case "hp":
             if (profile.scalingStat === "hp") result.scalingStatValue += rollVal;
             break;
         case "hp_":
-            if (profile.scalingStat === "hp") result.scalingStatValue += rollVal * baseHp;
+            if (profile.scalingStat === "hp") result.scalingStatValue += rollVal * baseStats.hp;
             break;
         case "def":
             if (profile.scalingStat === "def") result.scalingStatValue += rollVal;
             break;
         case "def_":
-            if (profile.scalingStat === "def") result.scalingStatValue += rollVal * baseDef;
+            if (profile.scalingStat === "def") result.scalingStatValue += rollVal * baseStats.def;
             break;
         case "crit_rate":
             result.critRate += rollVal;
@@ -187,8 +196,6 @@ function applySubstatRoll(
         case "spd":
             result.speed += rollVal;
             break;
-        // effect_hit, effect_res, break_dmg don't affect our DPS formula directly
-        // but carry weight via the greedy allocator's weight system
     }
 
     return result;
@@ -196,19 +203,17 @@ function applySubstatRoll(
 
 /**
  * Calculate optimal stats by greedily allocating rolls to maximize DPS.
+ * Non-DPS substats (effect_hit, effect_res, break_dmg) are allocated proportionally
+ * by weight since they don't affect the DPS formula directly.
  */
 function calculateOptimalStats(
-    character: Character,
     profile: CharacterProfile,
     baselineStats: ComputedStats,
+    baseStats: BaseStats,
     quality: number,
     rollBudget: number
 ): ComputedStats {
-    const workingStats = { ...baselineStats };
-    const baseAtk = getBaseStatValue(character, "atk");
-    const baseHp = getBaseStatValue(character, "hp");
-    const baseDef = getBaseStatValue(character, "def");
-
+    let workingStats = { ...baselineStats };
     const rollCounts: Partial<Record<SubstatField, number>> = {};
     const maxPerStat = Math.ceil(rollBudget * 0.55);
 
@@ -217,34 +222,62 @@ function calculateOptimalStats(
         number
     ][];
 
-    for (let i = 0; i < rollBudget; i++) {
+    // Precompute roll values once (quality is constant)
+    const rollValues = new Map(weightedFields.map(([field]) => [field, rollValueAtQuality(field, quality)]));
+
+    // Separate DPS-affecting and non-DPS substats
+    const DPS_FIELDS = new Set<SubstatField>([
+        "atk",
+        "atk_",
+        "hp",
+        "hp_",
+        "def",
+        "def_",
+        "crit_rate",
+        "crit_dmg",
+        "spd"
+    ]);
+    const dpsFields = weightedFields.filter(([f]) => DPS_FIELDS.has(f));
+    const nonDpsFields = weightedFields.filter(([f]) => !DPS_FIELDS.has(f));
+
+    // Allocate non-DPS substats proportionally by weight first
+    const totalNonDpsWeight = nonDpsFields.reduce((sum, [, w]) => sum + w, 0);
+    const totalWeight = weightedFields.reduce((sum, [, w]) => sum + w, 0);
+    const nonDpsRollBudget = totalWeight > 0 ? Math.round(rollBudget * (totalNonDpsWeight / totalWeight)) : 0;
+    const dpsRollBudget = rollBudget - nonDpsRollBudget;
+
+    // Distribute non-DPS rolls proportionally
+    for (const [field, weight] of nonDpsFields) {
+        const rolls = totalNonDpsWeight > 0 ? Math.round(nonDpsRollBudget * (weight / totalNonDpsWeight)) : 0;
+        rollCounts[field] = Math.min(rolls, maxPerStat);
+    }
+
+    // Greedy allocation for DPS-affecting substats
+    let currentDps = estimateDps(workingStats, profile.skillMultiplier);
+
+    for (let i = 0; i < dpsRollBudget; i++) {
         let bestField: SubstatField | null = null;
         let bestGain = -1;
+        let bestStats: ComputedStats | null = null;
 
-        const currentDps = estimateDps(workingStats, profile.skillMultiplier);
-
-        for (const [field, weight] of weightedFields) {
+        for (const [field, weight] of dpsFields) {
             if ((rollCounts[field] ?? 0) >= maxPerStat) continue;
 
-            const rollVal = rollValueAtQuality(field, quality);
-            const testStats = applySubstatRoll(workingStats, profile, field, rollVal, baseAtk, baseHp, baseDef);
+            const rollVal = rollValues.get(field)!;
+            const testStats = applySubstatRoll(workingStats, profile, field, rollVal, baseStats);
             const newDps = estimateDps(testStats, profile.skillMultiplier);
             const gain = (newDps - currentDps) * weight;
 
             if (gain > bestGain) {
                 bestGain = gain;
                 bestField = field;
+                bestStats = testStats;
             }
         }
 
-        if (bestField) {
-            const rollVal = rollValueAtQuality(bestField, quality);
-            const updated = applySubstatRoll(workingStats, profile, bestField, rollVal, baseAtk, baseHp, baseDef);
-            workingStats.scalingStatValue = updated.scalingStatValue;
-            workingStats.critRate = updated.critRate;
-            workingStats.critDmg = updated.critDmg;
-            workingStats.elementDmgBonus = updated.elementDmgBonus;
-            workingStats.speed = updated.speed;
+        if (bestField && bestStats) {
+            workingStats = bestStats;
+            currentDps = estimateDps(workingStats, profile.skillMultiplier);
             rollCounts[bestField] = (rollCounts[bestField] ?? 0) + 1;
         }
     }
@@ -256,32 +289,29 @@ function calculateOptimalStats(
  * Score individual relics based on weighted substat value vs theoretical max.
  */
 function scoreRelics(character: Character, profile: CharacterProfile): RelicScoreResult[] {
+    // Compute sorted weights once (invariant across relics)
+    const sortedWeights = Object.entries(profile.substatWeights)
+        .filter(([, w]) => w && w > 0)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 4);
+
     return character.relics.map(relic => {
         let actualWeightedValue = 0;
-        let maxWeightedValue = 0;
 
-        // Max possible rolls for this relic (5-star +15 = 9 total substat rolls)
         const maxRolls = relic.rarity === 5 ? 9 : relic.rarity === 4 ? 8 : 6;
 
-        // Score each substat
         for (const sub of relic.sub_affix) {
             const subField = MIHOMO_TYPE_TO_FIELD[sub.type];
             if (!subField) continue;
             const weight = profile.substatWeights[subField] ?? 0;
             const maxVal = maxRollValue(subField);
-            // Normalize: value / (maxRollValue * count) gives quality per roll
-            // Multiply by count and weight for total contribution
             if (maxVal > 0) {
                 actualWeightedValue += (sub.value / maxVal) * weight;
             }
         }
 
-        // Theoretical max: best 4 weighted substats all at max rolls
-        const sortedWeights = Object.entries(profile.substatWeights)
-            .filter(([, w]) => w && w > 0)
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 4);
-
+        // Theoretical max for this relic
+        let maxWeightedValue = 0;
         let remainingRolls = maxRolls;
         for (const [, weight] of sortedWeights) {
             const rollsForStat = Math.min(remainingRolls, Math.ceil(maxRolls / 3));

@@ -15,7 +15,6 @@ export type SubstatField =
     | "break_dmg";
 
 export interface CharacterProfile {
-    id: string;
     scalingStat: ScalingStat;
     skillMultiplier: number;
     elementDmgField: string;

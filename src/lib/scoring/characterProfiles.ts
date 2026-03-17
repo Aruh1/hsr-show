@@ -21,10 +21,8 @@ export const ELEMENT_TO_DMG_FIELD: Record<string, string> = {
  * speedTarget: optional speed breakpoint
  */
 export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
-    // ===== Destruction =====
     "1102": {
         // Seele
-        id: "1102",
         scalingStat: "atk",
         skillMultiplier: 2.2,
         elementDmgField: "quantum_dmg",
@@ -39,7 +37,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1204": {
         // Jingliu
-        id: "1204",
         scalingStat: "atk",
         skillMultiplier: 2.5,
         elementDmgField: "ice_dmg",
@@ -49,7 +46,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1005": {
         // Kafka
-        id: "1005",
         scalingStat: "atk",
         skillMultiplier: 1.6,
         elementDmgField: "lightning_dmg",
@@ -59,7 +55,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1205": {
         // Blade
-        id: "1205",
         scalingStat: "hp",
         skillMultiplier: 2.2,
         elementDmgField: "wind_dmg",
@@ -69,7 +64,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1213": {
         // Dan Heng IL
-        id: "1213",
         scalingStat: "atk",
         skillMultiplier: 3.0,
         elementDmgField: "imaginary_dmg",
@@ -79,7 +73,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1224": {
         // March 7th (Hunt)
-        id: "1224",
         scalingStat: "atk",
         skillMultiplier: 2.2,
         elementDmgField: "imaginary_dmg",
@@ -89,7 +82,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1112": {
         // Topaz
-        id: "1112",
         scalingStat: "atk",
         skillMultiplier: 1.5,
         elementDmgField: "fire_dmg",
@@ -99,7 +91,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1221": {
         // Dr. Ratio
-        id: "1221",
         scalingStat: "atk",
         skillMultiplier: 2.7,
         elementDmgField: "imaginary_dmg",
@@ -109,7 +100,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1225": {
         // Argenti
-        id: "1225",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "physical_dmg",
@@ -119,7 +109,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1305": {
         // Acheron
-        id: "1305",
         scalingStat: "atk",
         skillMultiplier: 3.0,
         elementDmgField: "lightning_dmg",
@@ -134,7 +123,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1310": {
         // Firefly
-        id: "1310",
         scalingStat: "atk",
         skillMultiplier: 2.0,
         elementDmgField: "fire_dmg",
@@ -144,7 +132,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1312": {
         // Misha
-        id: "1312",
         scalingStat: "atk",
         skillMultiplier: 2.0,
         elementDmgField: "ice_dmg",
@@ -153,7 +140,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1315": {
         // Boothill
-        id: "1315",
         scalingStat: "atk",
         skillMultiplier: 2.2,
         elementDmgField: "physical_dmg",
@@ -168,7 +154,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1404": {
         // Feixiao
-        id: "1404",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "wind_dmg",
@@ -183,7 +168,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1407": {
         // Mydei
-        id: "1407",
         scalingStat: "hp",
         skillMultiplier: 2.5,
         elementDmgField: "imaginary_dmg",
@@ -193,7 +177,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1409": {
         // Tribbie
-        id: "1409",
         scalingStat: "hp",
         skillMultiplier: 1.2,
         elementDmgField: "quantum_dmg",
@@ -203,7 +186,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1502": {
         // Yao Guang
-        id: "1502",
         scalingStat: "atk",
         skillMultiplier: 2.6,
         elementDmgField: "physical_dmg",
@@ -217,10 +199,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 134
     },
 
-    // ===== Erudition =====
     "1006": {
         // Silver Wolf -> Nihility but damage focused
-        id: "1006",
         scalingStat: "atk",
         skillMultiplier: 1.96,
         elementDmgField: "quantum_dmg",
@@ -230,7 +210,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1302": {
         // Jing Yuan
-        id: "1302",
         scalingStat: "atk",
         skillMultiplier: 2.2,
         elementDmgField: "lightning_dmg",
@@ -240,7 +219,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1210": {
         // Guinaifen
-        id: "1210",
         scalingStat: "atk",
         skillMultiplier: 1.5,
         elementDmgField: "fire_dmg",
@@ -250,7 +228,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1214": {
         // DHIL's Erudition variant / Serval
-        id: "1214",
         scalingStat: "atk",
         skillMultiplier: 1.4,
         elementDmgField: "lightning_dmg",
@@ -259,7 +236,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1303": {
         // Ruan Mei
-        id: "1303",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "ice_dmg",
@@ -269,7 +245,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1308": {
         // Aventurine
-        id: "1308",
         scalingStat: "def",
         skillMultiplier: 1.5,
         elementDmgField: "imaginary_dmg",
@@ -278,10 +253,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 134
     },
 
-    // ===== Hunt =====
     "1001": {
         // March 7th (Preservation)
-        id: "1001",
         scalingStat: "def",
         skillMultiplier: 0.8,
         elementDmgField: "ice_dmg",
@@ -290,7 +263,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1101": {
         // Bronya
-        id: "1101",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "wind_dmg",
@@ -300,7 +272,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1108": {
         // Yanqing
-        id: "1108",
         scalingStat: "atk",
         skillMultiplier: 2.2,
         elementDmgField: "ice_dmg",
@@ -309,7 +280,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1209": {
         // Sushang
-        id: "1209",
         scalingStat: "atk",
         skillMultiplier: 2.1,
         elementDmgField: "physical_dmg",
@@ -322,10 +292,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         substatWeights: { crit_rate: 1.0, crit_dmg: 1.0, atk_: 0.75, spd: 0.6, atk: 0.3 }
     },
 
-    // ===== Nihility =====
     "1003": {
         // Himeko
-        id: "1003",
         scalingStat: "atk",
         skillMultiplier: 2.0,
         elementDmgField: "fire_dmg",
@@ -334,7 +302,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1007": {
         // Black Swan
-        id: "1007",
         scalingStat: "atk",
         skillMultiplier: 1.2,
         elementDmgField: "wind_dmg",
@@ -344,7 +311,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1111": {
         // Luka
-        id: "1111",
         scalingStat: "atk",
         skillMultiplier: 1.6,
         elementDmgField: "physical_dmg",
@@ -354,7 +320,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1106": {
         // Pela
-        id: "1106",
         scalingStat: "atk",
         skillMultiplier: 1.0,
         elementDmgField: "ice_dmg",
@@ -364,7 +329,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1109": {
         // Hook
-        id: "1109",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "fire_dmg",
@@ -378,7 +342,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1110": {
         // Sampo
-        id: "1110",
         scalingStat: "atk",
         skillMultiplier: 1.5,
         elementDmgField: "wind_dmg",
@@ -387,10 +350,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 160
     },
 
-    // ===== Harmony =====
     "1002": {
         // Dan Heng
-        id: "1002",
         scalingStat: "atk",
         skillMultiplier: 2.6,
         elementDmgField: "wind_dmg",
@@ -404,7 +365,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1009": {
         // Asta
-        id: "1009",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "fire_dmg",
@@ -414,7 +374,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1202": {
         // Tingyun
-        id: "1202",
         scalingStat: "atk",
         skillMultiplier: 0.5,
         elementDmgField: "lightning_dmg",
@@ -424,7 +383,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1215": {
         // Hanya
-        id: "1215",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "physical_dmg",
@@ -434,7 +392,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1306": {
         // Sparkle
-        id: "1306",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "quantum_dmg",
@@ -444,7 +401,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1309": {
         // Robin
-        id: "1309",
         scalingStat: "atk",
         skillMultiplier: 0.5,
         elementDmgField: "physical_dmg",
@@ -454,7 +410,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1313": {
         // Sunday
-        id: "1313",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "imaginary_dmg",
@@ -464,7 +419,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1314": {
         // Fugue (Trailblazer Harmony)
-        id: "1314",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "fire_dmg",
@@ -474,7 +428,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1406": {
         // Anaxa
-        id: "1406",
         scalingStat: "atk",
         skillMultiplier: 2.0,
         elementDmgField: "wind_dmg",
@@ -483,10 +436,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 134
     },
 
-    // ===== Preservation =====
     "1104": {
         // Gepard
-        id: "1104",
         scalingStat: "def",
         skillMultiplier: 0.8,
         elementDmgField: "ice_dmg",
@@ -495,7 +446,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1211": {
         // Bailu
-        id: "1211",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "lightning_dmg",
@@ -505,7 +455,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1208": {
         // Fu Xuan
-        id: "1208",
         scalingStat: "hp",
         skillMultiplier: 0.6,
         elementDmgField: "quantum_dmg",
@@ -514,10 +463,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 134
     },
 
-    // ===== Abundance =====
     "1013": {
         // Huohuo
-        id: "1013",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "wind_dmg",
@@ -527,7 +474,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1203": {
         // Luocha
-        id: "1203",
         scalingStat: "atk",
         skillMultiplier: 0.5,
         elementDmgField: "imaginary_dmg",
@@ -537,7 +483,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1217": {
         // Gallagher
-        id: "1217",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "fire_dmg",
@@ -547,7 +492,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1301": {
         // Lingsha
-        id: "1301",
         scalingStat: "atk",
         skillMultiplier: 1.0,
         elementDmgField: "fire_dmg",
@@ -556,10 +500,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 160
     },
 
-    // ===== Remembrance =====
     "1307": {
         // The Herta
-        id: "1307",
         scalingStat: "atk",
         skillMultiplier: 2.8,
         elementDmgField: "ice_dmg",
@@ -569,7 +511,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1415": {
         // Cyrene
-        id: "1415",
         scalingStat: "hp",
         skillMultiplier: 2.2,
         elementDmgField: "ice_dmg",
@@ -579,7 +520,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1413": {
         // Aglaea
-        id: "1413",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "lightning_dmg",
@@ -588,10 +528,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 160
     },
 
-    // ===== Trailblazers =====
     "8001": {
         // Trailblazer (Physical/Destruction)
-        id: "8001",
         scalingStat: "atk",
         skillMultiplier: 1.3,
         elementDmgField: "physical_dmg",
@@ -605,7 +543,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "8002": {
         // Trailblazer (Physical/Destruction) female
-        id: "8002",
         scalingStat: "atk",
         skillMultiplier: 1.3,
         elementDmgField: "physical_dmg",
@@ -619,7 +556,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "8003": {
         // Trailblazer (Fire/Preservation)
-        id: "8003",
         scalingStat: "def",
         skillMultiplier: 0.8,
         elementDmgField: "fire_dmg",
@@ -628,7 +564,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "8004": {
         // Trailblazer (Fire/Preservation) female
-        id: "8004",
         scalingStat: "def",
         skillMultiplier: 0.8,
         elementDmgField: "fire_dmg",
@@ -637,7 +572,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "8005": {
         // Trailblazer (Imaginary/Harmony)
-        id: "8005",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "imaginary_dmg",
@@ -647,7 +581,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "8006": {
         // Trailblazer (Imaginary/Harmony) female
-        id: "8006",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "imaginary_dmg",
@@ -656,10 +589,8 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
         speedTarget: 160
     },
 
-    // ===== Additional popular characters =====
     "1004": {
         // Welt
-        id: "1004",
         scalingStat: "atk",
         skillMultiplier: 1.8,
         elementDmgField: "imaginary_dmg",
@@ -669,7 +600,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1008": {
         // Arlan
-        id: "1008",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "lightning_dmg",
@@ -678,7 +608,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1103": {
         // Clara
-        id: "1103",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "physical_dmg",
@@ -687,7 +616,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1105": {
         // Natasha
-        id: "1105",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "physical_dmg",
@@ -696,7 +624,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1107": {
         // Qingque
-        id: "1107",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "quantum_dmg",
@@ -705,7 +632,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1201": {
         // Herta
-        id: "1201",
         scalingStat: "atk",
         skillMultiplier: 1.7,
         elementDmgField: "ice_dmg",
@@ -714,7 +640,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1206": {
         // Sushang
-        id: "1206",
         scalingStat: "atk",
         skillMultiplier: 2.1,
         elementDmgField: "physical_dmg",
@@ -728,7 +653,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1207": {
         // Yukong
-        id: "1207",
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField: "imaginary_dmg",
@@ -738,7 +662,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1212": {
         // Jingliu (copy)
-        id: "1212",
         scalingStat: "atk",
         skillMultiplier: 2.5,
         elementDmgField: "ice_dmg",
@@ -748,7 +671,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1218": {
         // Jiaoqiu
-        id: "1218",
         scalingStat: "atk",
         skillMultiplier: 1.2,
         elementDmgField: "fire_dmg",
@@ -758,7 +680,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1220": {
         // Moze
-        id: "1220",
         scalingStat: "atk",
         skillMultiplier: 2.0,
         elementDmgField: "lightning_dmg",
@@ -772,7 +693,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1222": {
         // Jade
-        id: "1222",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "quantum_dmg",
@@ -782,7 +702,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1223": {
         // Yunli
-        id: "1223",
         scalingStat: "atk",
         skillMultiplier: 2.4,
         elementDmgField: "physical_dmg",
@@ -791,7 +710,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1304": {
         // Aventurine (duplicate key above, skip)
-        id: "1304",
         scalingStat: "atk",
         skillMultiplier: 2.0,
         elementDmgField: "imaginary_dmg",
@@ -800,7 +718,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1401": {
         // The Herta (already 1307, this is Castorice)
-        id: "1401",
         scalingStat: "hp",
         skillMultiplier: 2.0,
         elementDmgField: "quantum_dmg",
@@ -809,7 +726,6 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
     },
     "1402": {
         // Tribbie already above, this might be different
-        id: "1402",
         scalingStat: "atk",
         skillMultiplier: 2.0,
         elementDmgField: "quantum_dmg",
@@ -825,17 +741,16 @@ export const CHARACTER_PROFILES: Record<string, CharacterProfile> = {
 function generateDefaultProfile(characterId: string, elementId: string, pathId: string): CharacterProfile {
     const elementDmgField = ELEMENT_TO_DMG_FIELD[elementId] ?? "physical_dmg";
 
-    // DPS paths
-    if (["Destruction", "Hunt", "Erudition", "Elation"].includes(pathId)) {
+    // DPS paths (includes Remembrance/Memory which uses the same build template)
+    if (["Destruction", "Hunt", "Erudition", "Elation", "Memory"].includes(pathId)) {
         return {
-            id: characterId,
             scalingStat: "atk",
             skillMultiplier: 2.0,
             elementDmgField,
             idealMainStats: {
                 body: ["crit_rate", "crit_dmg"],
                 feet: ["spd", "atk_"],
-                sphere: [elementDmgField.replace("_dmg", "")],
+                sphere: [elementDmgField],
                 rope: ["atk_"]
             },
             substatWeights: { crit_rate: 1.0, crit_dmg: 1.0, atk_: 0.75, spd: 0.6, atk: 0.3 },
@@ -846,7 +761,6 @@ function generateDefaultProfile(characterId: string, elementId: string, pathId: 
     // Tank path
     if (pathId === "Preservation") {
         return {
-            id: characterId,
             scalingStat: "def",
             skillMultiplier: 0.8,
             elementDmgField,
@@ -858,7 +772,6 @@ function generateDefaultProfile(characterId: string, elementId: string, pathId: 
     // Healer path
     if (pathId === "Abundance") {
         return {
-            id: characterId,
             scalingStat: "hp",
             skillMultiplier: 0.5,
             elementDmgField,
@@ -868,27 +781,8 @@ function generateDefaultProfile(characterId: string, elementId: string, pathId: 
         };
     }
 
-    // Remembrance path
-    if (pathId === "Memory") {
-        return {
-            id: characterId,
-            scalingStat: "atk",
-            skillMultiplier: 2.0,
-            elementDmgField,
-            idealMainStats: {
-                body: ["crit_rate", "crit_dmg"],
-                feet: ["spd", "atk_"],
-                sphere: [elementDmgField.replace("_dmg", "")],
-                rope: ["atk_"]
-            },
-            substatWeights: { crit_rate: 1.0, crit_dmg: 1.0, atk_: 0.75, spd: 0.6, atk: 0.3 },
-            speedTarget: 134
-        };
-    }
-
     // Support paths (Harmony, Nihility)
     return {
-        id: characterId,
         scalingStat: "hp",
         skillMultiplier: 0.5,
         elementDmgField,
