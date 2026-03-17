@@ -102,7 +102,8 @@ export const STORAGE_KEYS = {
     ALL_TRACES: "allTraces",
     SAVED_BUILDS: "savedBuilds",
     UID: "uid",
-    LANG: "lang"
+    LANG: "lang",
+    DPS_SCORE: "dpsScore"
 } as const;
 
 // Default settings
@@ -111,5 +112,6 @@ export const DEFAULT_SETTINGS = {
     blur: false,
     substatDistribution: false,
     allTraces: false,
+    dpsScore: false,
     lang: "en"
 } as const;

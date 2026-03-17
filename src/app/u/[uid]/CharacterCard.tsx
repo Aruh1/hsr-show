@@ -3,6 +3,7 @@ import type { Character, SkillTree } from "@/types";
 import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS, STAT_LABELS } from "@/lib/constants";
 import { TraceTree, MinorTraces } from "@/components/TraceComponents";
 import { AiFillLock } from "react-icons/ai";
+import { calculateCharacterScore } from "@/lib/scoring";
 
 interface CharacterCardProps {
     character: Character;
@@ -14,6 +15,7 @@ interface CharacterCardProps {
     substatDistribution: boolean;
     allTraces: boolean;
     lang: string;
+    dpsScore: boolean;
 }
 
 interface IconMap {
@@ -29,7 +31,8 @@ const CharacterCard = ({
     customImage,
     substatDistribution,
     allTraces,
-    lang
+    lang,
+    dpsScore
 }: CharacterCardProps) => {
     // Get localized labels for Memosprite
     const localizedLabels = MEMOSPRITE_LABELS[lang] || MEMOSPRITE_LABELS["en"];
@@ -62,6 +65,12 @@ const CharacterCard = ({
             icon => icon.parent === null && icon.max_level === 1 && icon.anchor !== "Point05"
         );
     }, [character.skill_trees]);
+
+    // DPS Score computation
+    const scoreResult = useMemo(() => {
+        if (!dpsScore) return null;
+        return calculateCharacterScore(character);
+    }, [character, dpsScore]);
 
     return (
         <div className={`relative min-h-[650px] w-[1400px] rounded-3xl ${blur ? "BG" : "Blur-BG"} overflow-hidden`}>
@@ -145,6 +154,19 @@ const CharacterCard = ({
                                 <span className="text-xl"> / </span>
                                 <span className="text-xl text-neutral-400">{character?.promotion * 10 + 20}</span>
                             </div>
+                            {dpsScore && scoreResult && (
+                                <div className="mt-1 flex items-center gap-2">
+                                    <span className={`text-2xl font-bold ${scoreResult.overall.gradeColor}`}>
+                                        {scoreResult.overall.grade}
+                                    </span>
+                                    <span className="text-lg text-neutral-300">
+                                        {(scoreResult.overall.percent * 100).toFixed(1)}%
+                                    </span>
+                                    {!scoreResult.profileFound && (
+                                        <span className="text-xs text-neutral-500">(est.)</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Middle Section - Main Container for Traces + Light Cone */}
@@ -471,66 +493,86 @@ const CharacterCard = ({
                     </div>
                     <div className="w-1/3">
                         <div className="flex h-[650px] flex-col justify-between py-3 text-lg">
-                            {character?.relics.map((relic, index) => (
-                                <div
-                                    key={relic.id || index}
-                                    className={`black-blur relative flex flex-row items-center rounded-s-lg border-l-2 p-1
+                            {character?.relics.map((relic, index) => {
+                                const relicScore = dpsScore && scoreResult?.relics?.[index];
+                                return (
+                                    <div
+                                        key={relic.id || index}
+                                        className={`black-blur relative flex flex-row items-center rounded-s-lg border-l-2 p-1
                   ${relic.rarity == 5 && "border-yellow-600"}
                   ${relic.rarity == 4 && "border-purple-600"}
                   ${relic.rarity == 3 && "border-blue-600"}
                   `}
-                                >
-                                    <div className="flex">
-                                        <img src={ASSET_URL + relic.icon} alt="Relic Icon" className="h-auto w-20" />
-                                        <img
-                                            src={ASSET_URL + "icon/deco/Star" + relic.rarity + ".png"}
-                                            alt="Relic Rarity Icon"
-                                            className="absolute bottom-1 h-auto w-20"
-                                        />
-                                    </div>
-                                    <div className="mx-1 flex w-1/6 flex-col items-center justify-center">
-                                        <img
-                                            src={ASSET_URL + relic.main_affix.icon}
-                                            alt="Main Affix Icon"
-                                            className="h-auto w-9"
-                                        />
-                                        <span className="text-base text-[#f1a23c]">{relic.main_affix.display}</span>
-                                        <span className="black-blur rounded-sm px-1 text-xs">+{relic.level}</span>
-                                    </div>
-                                    <div className="h-[80px] border-l opacity-50"></div>
-                                    <div
-                                        className={`m-auto grid w-1/2 grid-cols-2 ${substatDistribution ? "mt-1 gap-0.5" : "gap-2"}`}
                                     >
-                                        {relic.sub_affix.map((sub_affix, index) => (
-                                            <div key={index} className="flex flex-col">
-                                                <div className="flex flex-row items-center">
-                                                    <img
-                                                        src={ASSET_URL + sub_affix.icon}
-                                                        alt="Sub Affix Icon"
-                                                        className="h-auto w-7"
-                                                    />
-                                                    {sub_affix.field === "spd" ? (
-                                                        <span className="text-sm">
-                                                            +{(sub_affix.value - 0.005).toFixed(1)}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-sm">+{sub_affix.display}</span>
+                                        {relicScore && (
+                                            <div className="absolute right-1 top-0 flex items-center gap-0.5">
+                                                <span className={`text-xs font-bold ${relicScore.gradeColor}`}>
+                                                    {relicScore.grade}
+                                                </span>
+                                                <span className="text-xs text-neutral-400">
+                                                    {relicScore.displayScore}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex">
+                                            <img
+                                                src={ASSET_URL + relic.icon}
+                                                alt="Relic Icon"
+                                                className="h-auto w-20"
+                                            />
+                                            <img
+                                                src={ASSET_URL + "icon/deco/Star" + relic.rarity + ".png"}
+                                                alt="Relic Rarity Icon"
+                                                className="absolute bottom-1 h-auto w-20"
+                                            />
+                                        </div>
+                                        <div className="mx-1 flex w-1/6 flex-col items-center justify-center">
+                                            <img
+                                                src={ASSET_URL + relic.main_affix.icon}
+                                                alt="Main Affix Icon"
+                                                className="h-auto w-9"
+                                            />
+                                            <span className="text-base text-[#f1a23c]">{relic.main_affix.display}</span>
+                                            <span className="black-blur rounded-sm px-1 text-xs">+{relic.level}</span>
+                                        </div>
+                                        <div className="h-[80px] border-l opacity-50"></div>
+                                        <div
+                                            className={`m-auto grid w-1/2 grid-cols-2 ${substatDistribution ? "mt-1 gap-0.5" : "gap-2"}`}
+                                        >
+                                            {relic.sub_affix.map((sub_affix, index) => (
+                                                <div key={index} className="flex flex-col">
+                                                    <div className="flex flex-row items-center">
+                                                        <img
+                                                            src={ASSET_URL + sub_affix.icon}
+                                                            alt="Sub Affix Icon"
+                                                            className="h-auto w-7"
+                                                        />
+                                                        {sub_affix.field === "spd" ? (
+                                                            <span className="text-sm">
+                                                                +{(sub_affix.value - 0.005).toFixed(1)}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-sm">+{sub_affix.display}</span>
+                                                        )}
+                                                    </div>
+                                                    {substatDistribution && (
+                                                        <div className="flex w-full flex-row justify-evenly">
+                                                            {sub_affix?.dist?.map((step, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="-mt-3 text-sm text-blue-300"
+                                                                >
+                                                                    {step === 0 ? "." : step === 1 ? ".." : "..."}
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     )}
                                                 </div>
-                                                {substatDistribution && (
-                                                    <div className="flex w-full flex-row justify-evenly">
-                                                        {sub_affix?.dist?.map((step, index) => (
-                                                            <div key={index} className="-mt-3 text-sm text-blue-300">
-                                                                {step === 0 ? "." : step === 1 ? ".." : "..."}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

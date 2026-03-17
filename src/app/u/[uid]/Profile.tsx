@@ -38,6 +38,7 @@ interface ProfileSettings {
     blur: boolean;
     substatDistribution: boolean;
     allTraces: boolean;
+    dpsScore: boolean;
     lang: string;
     savedUID: string;
 }
@@ -53,6 +54,7 @@ const Profile = () => {
         blur: getLocalStorageBool("backgroundBlur", false),
         substatDistribution: getLocalStorageBool("substatDistribution", false),
         allTraces: getLocalStorageBool("allTraces", false),
+        dpsScore: getLocalStorageBool("dpsScore", false),
         lang: getLocalStorageValue("lang", "en"),
         savedUID: getLocalStorageValue("uid", "")
     }));
@@ -120,7 +122,7 @@ const Profile = () => {
 
     // Setting toggle helper — updates state + localStorage in one call
     const toggleSetting = useCallback(
-        (key: "hideUID" | "blur" | "substatDistribution" | "allTraces", storageKey: string) => {
+        (key: "hideUID" | "blur" | "substatDistribution" | "allTraces" | "dpsScore", storageKey: string) => {
             setSettings(prev => {
                 const newValue = !prev[key];
                 localStorage.setItem(storageKey, String(newValue));
@@ -397,6 +399,7 @@ const Profile = () => {
                                             substatDistribution={settings.substatDistribution}
                                             allTraces={settings.allTraces}
                                             lang={settings.lang}
+                                            dpsScore={settings.dpsScore}
                                         />
                                     </div>
                                 </div>
@@ -449,6 +452,12 @@ const Profile = () => {
                                             onClick={() => toggleSetting("allTraces", "allTraces")}
                                         >
                                             Hide Minor Traces
+                                        </button>
+                                        <button
+                                            className={`btn text-sm ${settings.dpsScore ? "border border-purple-500 bg-purple-600/30" : ""}`}
+                                            onClick={() => toggleSetting("dpsScore", "dpsScore")}
+                                        >
+                                            DPS Score
                                         </button>
                                     </div>
                                     <div className="my-2 flex">
