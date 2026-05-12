@@ -1,3 +1,5 @@
+"use client";
+
 import { useRouter } from "next/navigation";
 import { useState, useCallback, useRef, useMemo, useTransition } from "react";
 import { BsPcDisplay, BsAndroid2, BsApple, BsPlaystation } from "react-icons/bs";

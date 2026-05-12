@@ -1,7 +1,8 @@
-import { useMemo, memo, useState } from "react";
+"use client";
+
+import { useMemo, memo } from "react";
 import Image from "next/image";
 import type { Character, SkillTree } from "@/types";
-import type { CharacterScoreOutput } from "@/lib/scoring/types";
 import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS, STAT_LABELS } from "@/lib/constants";
 import { TraceTree, MinorTraces } from "@/components/TraceComponents";
 import { AiFillLock } from "react-icons/ai";
@@ -69,20 +70,10 @@ const CharacterCard = ({
     }, [character.skill_trees]);
 
     // DPS Score computation
-    // Note: Since calculateCharacterScore is now async (uses server cache),
-    // we should ideally pass the score as a prop if we want to keep this component synchronous.
-    // For now, let's check if we can make this component async or if it's strictly client.
-    // Given the previous edits, it's likely used in Profile which is client-side.
-    const [scoreResult, setScoreResult] = useState<CharacterScoreOutput | null>(null);
-
-    useMemo(() => {
-        if (!dpsScore) {
-            setScoreResult(null);
-            return;
-        }
-        calculateCharacterScore(character).then(setScoreResult);
+    const scoreResult = useMemo(() => {
+        if (!dpsScore) return null;
+        return calculateCharacterScore(character);
     }, [character, dpsScore]);
-
     return (
         <div className={`relative min-h-[650px] w-[1400px] rounded-3xl ${blur ? "BG" : "Blur-BG"} overflow-hidden`}>
             <div className="absolute bottom-2 left-4 z-10">

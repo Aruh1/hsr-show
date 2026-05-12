@@ -1,7 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { RETRY_CONFIG } from "@/lib/constants";
 import { processCharacter, type ApiCharacter } from "@/lib/processCharacter";
-import { calculateCharacterScore } from "@/lib/scoring";
+import { calculateCharacterScoreCached } from "./cachedScoring";
 import type { ProfileData, Character } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -73,7 +73,7 @@ export async function getMihomoData(uid: string, lang: string) {
         data.characters.map(async (char: ApiCharacter) => {
             const processed = processCharacter(char);
             // Pre-warm scoring cache for each character asynchronously
-            void calculateCharacterScore(processed as unknown as Character);
+            void calculateCharacterScoreCached(processed as unknown as Character);
             return processed;
         })
     );

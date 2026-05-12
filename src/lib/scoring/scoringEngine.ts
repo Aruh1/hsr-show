@@ -1,4 +1,3 @@
-import { cacheLife, cacheTag } from "next/cache";
 import type { Character } from "@/types";
 import type { CharacterProfile, ComputedStats, RelicScoreResult, CharacterScoreOutput, SubstatField } from "./types";
 import { getCharacterProfile, CHARACTER_PROFILES } from "./characterProfiles";
@@ -15,13 +14,9 @@ interface BaseStats {
 /**
  * Main entry point: computes the full DPS score for a character.
  */
-export async function calculateCharacterScore(character: Character): Promise<CharacterScoreOutput> {
-    "use cache";
-    cacheLife("minutes");
-    cacheTag("scoring", `scoring-${character.id}`);
-
+export function calculateCharacterScore(character: Character): CharacterScoreOutput {
     const profileFound = character.id in CHARACTER_PROFILES;
-    const profile = await getCharacterProfile(character.id, character.element.id, character.path.id);
+    const profile = getCharacterProfile(character.id, character.element.id, character.path.id);
 
     if (!character.relics.length) {
         return {

@@ -1,4 +1,3 @@
-import { cacheLife } from "next/cache";
 import type { CharacterProfile } from "./types";
 
 export const ELEMENT_TO_DMG_FIELD: Record<string, string> = {
@@ -797,12 +796,6 @@ function generateDefaultProfile(_characterId: string, elementId: string, pathId:
  * Get profile for a character. Falls back to a generated default
  * based on element and path if no explicit profile exists.
  */
-export async function getCharacterProfile(
-    characterId: string,
-    elementId: string,
-    pathId: string
-): Promise<CharacterProfile> {
-    "use cache";
-    cacheLife("days");
+export function getCharacterProfile(characterId: string, elementId: string, pathId: string): CharacterProfile {
     return CHARACTER_PROFILES[characterId] ?? generateDefaultProfile(characterId, elementId, pathId);
 }
