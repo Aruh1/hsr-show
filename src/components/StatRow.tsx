@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ASSET_URL } from "@/lib/constants";
 import type { Property } from "@/types";
 
@@ -55,7 +56,7 @@ export const StatRow = ({ stat, compact = false }: StatRowProps) => {
     return (
         <div className={`flex flex-row items-center justify-between ${textSize}`}>
             <div className="flex flex-row items-center">
-                <img src={ASSET_URL + stat.icon} alt="Stat Icon" className="h-auto w-10" />
+                <Image src={ASSET_URL + stat.icon} alt="Stat Icon" width={40} height={40} className="h-auto w-10" />
                 <span>{stat.name}</span>
             </div>
             <span className="mx-3 grow rounded-sm border border-neutral-300 opacity-50"></span>
@@ -73,7 +74,13 @@ export const StatRow = ({ stat, compact = false }: StatRowProps) => {
 export const DefaultEnergyRow = () => (
     <div className="flex flex-row items-center justify-between">
         <div className="flex flex-row items-center">
-            <img src={ASSET_URL + "icon/property/IconEnergyRecovery.png"} alt="Stat Icon" className="h-auto w-10" />
+            <Image
+                src={ASSET_URL + "icon/property/IconEnergyRecovery.png"}
+                alt="Stat Icon"
+                width={40}
+                height={40}
+                className="h-auto w-10"
+            />
             <span>Energy Regeneration Rate</span>
         </div>
         <span className="mx-3 grow rounded-sm border border-neutral-300 opacity-50"></span>

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ASSET_URL } from "@/lib/constants";
 import type { Relic } from "@/types";
 
@@ -28,15 +29,23 @@ export const RelicCard = ({ relic, substatDistribution }: RelicCardProps) => {
             className={`black-blur relative flex flex-row items-center rounded-s-lg border-l-2 p-1 ${getBorderColor(relic.rarity)}`}
         >
             <div className="flex">
-                <img src={ASSET_URL + relic.icon} alt="Relic Icon" className="h-auto w-20" />
-                <img
+                <Image src={ASSET_URL + relic.icon} alt="Relic Icon" width={80} height={80} className="h-auto w-20" />
+                <Image
                     src={ASSET_URL + "icon/deco/Star" + relic.rarity + ".png"}
                     alt="Relic Rarity Icon"
+                    width={80}
+                    height={20}
                     className="absolute bottom-1 h-auto w-20"
                 />
             </div>
             <div className="mx-1 flex w-1/6 flex-col items-center justify-center">
-                <img src={ASSET_URL + relic.main_affix.icon} alt="Main Affix Icon" className="h-auto w-9" />
+                <Image
+                    src={ASSET_URL + relic.main_affix.icon}
+                    alt="Main Affix Icon"
+                    width={36}
+                    height={36}
+                    className="h-auto w-9"
+                />
                 <span className="text-base text-[#f1a23c]">{relic.main_affix.display}</span>
                 <span className="black-blur rounded-sm px-1 text-xs">+{relic.level}</span>
             </div>
@@ -45,14 +54,20 @@ export const RelicCard = ({ relic, substatDistribution }: RelicCardProps) => {
                 {relic.sub_affix.map((sub_affix, index) => (
                     <div key={index} className="flex flex-col">
                         <div className="flex flex-row items-center">
-                            <img src={ASSET_URL + sub_affix.icon} alt="Sub Affix Icon" className="h-auto w-7" />
+                            <Image
+                                src={ASSET_URL + sub_affix.icon}
+                                alt="Sub Affix Icon"
+                                width={28}
+                                height={28}
+                                className="h-auto w-7"
+                            />
                             {sub_affix.field === "spd" ? (
                                 <span className="text-sm">+{(sub_affix.value - 0.005).toFixed(1)}</span>
                             ) : (
                                 <span className="text-sm">+{sub_affix.display}</span>
                             )}
                         </div>
-                        {substatDistribution && (
+                        {substatDistribution ? (
                             <div className="flex w-full flex-row justify-evenly">
                                 {sub_affix?.dist?.map((step, stepIndex) => (
                                     <div key={stepIndex} className="-mt-3 text-sm text-blue-300">
@@ -60,7 +75,7 @@ export const RelicCard = ({ relic, substatDistribution }: RelicCardProps) => {
                                     </div>
                                 ))}
                             </div>
-                        )}
+                        ) : null}
                     </div>
                 ))}
             </div>

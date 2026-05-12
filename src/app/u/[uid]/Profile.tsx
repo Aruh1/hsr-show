@@ -1,7 +1,5 @@
-"use client";
-
-import { useParams, useRouter } from "next/navigation";
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useCallback, useRef, useMemo, useTransition } from "react";
 import { BsPcDisplay, BsAndroid2, BsApple, BsPlaystation } from "react-icons/bs";
 import Image from "next/image";
 import CharacterCard from "./CharacterCard";
@@ -43,10 +41,14 @@ interface ProfileSettings {
     savedUID: string;
 }
 
-const Profile = () => {
+interface ProfileProps {
+    uid: string;
+    initialData: ProfileData | null;
+}
+
+const Profile = ({ uid, initialData }: ProfileProps) => {
     const router = useRouter();
-    const params = useParams();
-    const uid = params.uid as string;
+    const [isPending, startTransition] = useTransition();
 
     // Safe to use lazy init — this "use client" component only renders client-side
     const [settings, setSettings] = useState<ProfileSettings>(() => ({
@@ -75,6 +77,10 @@ const Profile = () => {
 
     // SWR for data fetching — replaces manual fetch + retry loop
     const { data } = useSWR<ProfileData>(`/api/u/${uid}?lang=${settings.lang}`, fetcher, {
+        fallbackData:
+            settings.lang === (initialData?.powered?.includes("en") ? "en" : "en")
+                ? (initialData as ProfileData)
+                : undefined, // Basic check to avoid lang mismatch
         errorRetryCount: RETRY_CONFIG.maxRetries,
         errorRetryInterval: RETRY_CONFIG.baseDelay,
         revalidateOnFocus: false,
@@ -169,6 +175,14 @@ const Profile = () => {
         toast.success("Build deleted!", { toastId: `success-build-deleted-${index}` });
     }, []);
 
+    const handleCharacterSelect = useCallback((index: number, character: Character) => {
+        startTransition(() => {
+            setCharacter(character);
+            setSelected(index);
+            setCustomImage(null);
+        });
+    }, []);
+
     const ref = useRef<HTMLDivElement>(null);
     const saveImage = useCallback(
         (name: string, scale: number) => {
@@ -197,7 +211,7 @@ const Profile = () => {
     }
 
     return (
-        <div className="min-h-screen">
+        <div className={`min-h-screen transition-opacity duration-300 ${isPending ? "opacity-70" : "opacity-100"}`}>
             <div className="flex h-auto min-h-screen items-center justify-center">
                 <div className="flex overflow-auto">
                     <div className="my-5 flex flex-col lg:items-center">
@@ -254,7 +268,7 @@ const Profile = () => {
                                         />
                                         <span>Change UID</span>
                                     </button>
-                                    {settings.savedUID !== uid && (
+                                    {settings.savedUID !== uid ? (
                                         <button className="btn" onClick={linkUID}>
                                             <Image
                                                 src={ASSET_URL + "icon/sign/FriendAddIcon.png"}
@@ -264,7 +278,7 @@ const Profile = () => {
                                             />
                                             <span>Link UID</span>
                                         </button>
-                                    )}
+                                    ) : null}
                                     <button
                                         className="btn"
                                         onClick={() => router.push(`/api/u/${uid}?lang=${settings.lang}`)}
@@ -306,13 +320,9 @@ const Profile = () => {
                           rounded-tr-2xl
                           shadow-md 
                           hover:brightness-110
-                          ${selected === index && "ring-2 ring-neutral-300 "}
+                          ${selected === index ? "ring-2 ring-neutral-300 " : ""}
                         `}
-                                            onClick={() => {
-                                                setCharacter(savedBuilds[index].character);
-                                                setSelected(index);
-                                                setCustomImage(null);
-                                            }}
+                                            onClick={() => handleCharacterSelect(index, savedBuilds[index].character)}
                                             key={index}
                                         >
                                             <div className="relative flex w-[100px] flex-col">
@@ -327,12 +337,15 @@ const Profile = () => {
                                                         {build.buildName}
                                                     </span>
                                                 </div>
-                                                {selected === index && (
+                                                {selected === index ? (
                                                     <div
                                                         className={
                                                             "absolute left-0 top-0 text-gray-400 hover:text-gray-500"
                                                         }
-                                                        onClick={() => deleteBuild(index)}
+                                                        onClick={e => {
+                                                            e.stopPropagation();
+                                                            deleteBuild(index);
+                                                        }}
                                                     >
                                                         <span className="sr-only">Delete</span>
                                                         <svg
@@ -351,7 +364,7 @@ const Profile = () => {
                                                             />
                                                         </svg>
                                                     </div>
-                                                )}
+                                                ) : null}
                                             </div>
                                         </div>
                                     ))}
@@ -368,20 +381,16 @@ const Profile = () => {
                             cursor-pointer 
                             rounded-full 
                             hover:brightness-110 
-                            ${selected === index && "bg-white ring-2 ring-neutral-300"}
+                            ${selected === index ? "bg-white ring-2 ring-neutral-300" : ""}
                           `}
-                                            onClick={() => {
-                                                setCharacter(data?.characters[index]);
-                                                setSelected(index);
-                                                setCustomImage(null);
-                                            }}
+                                            onClick={() => handleCharacterSelect(index, data.characters[index])}
                                             key={index}
                                         />
                                     ))}
                                 </div>
                             )}
                         </div>
-                        {character && (
+                        {character ? (
                             <>
                                 <div className="flex w-screen overflow-x-auto 2xl:justify-center">
                                     <div
@@ -424,7 +433,11 @@ const Profile = () => {
                                             Custom Image
                                             <input
                                                 type="file"
-                                                onChange={e => setCustomImage(URL.createObjectURL(e.target.files[0]))}
+                                                onChange={e => {
+                                                    if (e.target.files && e.target.files[0]) {
+                                                        setCustomImage(URL.createObjectURL(e.target.files[0]));
+                                                    }
+                                                }}
                                                 className="hidden"
                                                 accept="image/*"
                                             />
@@ -477,7 +490,7 @@ const Profile = () => {
                                     </div>
                                 </div>
                             </>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             </div>

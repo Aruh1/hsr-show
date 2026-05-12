@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useTransition, useCallback } from "react";
 import Image from "next/image";
 import { ASSET_URL, SUPPORTED_LANGUAGES } from "@/lib/constants";
 
@@ -20,6 +20,7 @@ const getLocalStorageValue = (key: string, defaultValue: string): string => {
 export default function Search() {
     // Use useSyncExternalStore to detect hydration without triggering the lint rule
     const isServer = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
+    const [isPending, startTransition] = useTransition();
 
     const [UID, setUID] = useState("");
     // Initialize state with localStorage values on client, defaults on server
@@ -37,9 +38,17 @@ export default function Search() {
     // isHydrated is now derived from useSyncExternalStore
     const isHydrated = !isServer;
 
+    const handleSearch = useCallback(() => {
+        if (UID) {
+            startTransition(() => {
+                router.push(`/u/${UID}`);
+            });
+        }
+    }, [UID, router]);
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && UID) {
-            router.push(`/u/${UID}`);
+        if (e.key === "Enter") {
+            handleSearch();
         }
     };
 
@@ -51,7 +60,9 @@ export default function Search() {
     };
 
     return (
-        <div className="flex w-full max-w-md flex-col items-center gap-4">
+        <div
+            className={`flex w-full max-w-md flex-col items-center gap-4 transition-opacity duration-300 ${isPending ? "opacity-70" : "opacity-100"}`}
+        >
             <label htmlFor="uid" className="sr-only">
                 Enter UID
             </label>
@@ -86,14 +97,15 @@ export default function Search() {
                         className="focus-ring w-full appearance-none rounded-lg border-2 border-gray-600 bg-gray-800 px-4 py-2 text-center leading-tight text-white transition-colors placeholder:text-gray-400 hover:border-gray-500 focus:border-purple-500 focus:bg-gray-900 focus:outline-hidden sm:w-40"
                     />
                     <button
-                        onClick={() => UID && router.push(`/u/${UID}`)}
-                        className="btn bg-purple-600 px-5 py-2 font-bold text-white hover:bg-purple-500"
+                        onClick={handleSearch}
+                        disabled={isPending}
+                        className="btn bg-purple-600 px-5 py-2 font-bold text-white hover:bg-purple-500 disabled:opacity-50"
                     >
-                        Search
+                        {isPending ? "Searching..." : "Search"}
                     </button>
                 </div>
             </div>
-            {isHydrated && savedUID && (
+            {isHydrated && savedUID ? (
                 <Link
                     href={`/u/${savedUID}`}
                     className="btn gap-2 border border-stone-600 bg-stone-800 px-4 py-2 transition-all hover:border-stone-500"
@@ -106,7 +118,7 @@ export default function Search() {
                     />
                     <span>Linked Profile: {savedUID}</span>
                 </Link>
-            )}
+            ) : null}
         </div>
     );
 }

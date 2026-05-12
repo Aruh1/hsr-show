@@ -72,6 +72,11 @@ html {
     background-repeat: no-repeat;
 }
 
+.showcase {
+    content-visibility: auto;
+    contain-intrinsic-size: 1400px 650px;
+}
+
 .black-blur {
     background-color: rgba(0, 0, 0, 0.3);
 }

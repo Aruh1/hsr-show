@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ASSET_URL } from "@/lib/constants";
 import type { SkillTree } from "@/types";
 
@@ -17,9 +18,11 @@ export const SkillIcon = ({ skill, typeText, customLabel, borderColor = "border-
     return (
         <div className="flex flex-col items-center">
             <div className="relative flex flex-col items-center">
-                <img
+                <Image
                     src={ASSET_URL + skill.icon}
                     alt="Skill Icon"
+                    width={48}
+                    height={48}
                     className={`h-auto w-12 rounded-full border-2 ${borderColor} ${bgColor}`}
                 />
                 <span className="black-blur absolute bottom-4 text-sm">

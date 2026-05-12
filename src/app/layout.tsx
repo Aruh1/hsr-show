@@ -1,9 +1,11 @@
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
+import dynamic from "next/dynamic";
 import Footer from "./Footer";
 import { Outfit } from "next/font/google";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+
+const Analytics = dynamic(() => import("@vercel/analytics/react").then(m => m.Analytics), { ssr: false });
 
 const outfit = Outfit({
     subsets: ["latin"],
