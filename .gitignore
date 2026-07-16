@@ -37,3 +37,6 @@ next-env.d.ts
 
 # prettier
 .prettierrc
+
+# API response files
+response_*.json

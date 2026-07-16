@@ -3,14 +3,15 @@ import { getCharacterProfile as getProfileRaw } from "./scoring/characterProfile
 import { calculateCharacterScore as calculateScoreRaw } from "./scoring/scoringEngine";
 import type { Character } from "@/types";
 import type { CharacterProfile, CharacterScoreOutput } from "./scoring/types";
+import type { ElementId, PathId } from "@/data/types";
 
 /**
  * Cached version of getCharacterProfile for server use.
  */
 export async function getCharacterProfileCached(
     characterId: string,
-    elementId: string,
-    pathId: string
+    elementId: ElementId,
+    pathId: PathId
 ): Promise<CharacterProfile> {
     "use cache";
     cacheLife("days");

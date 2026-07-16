@@ -2,11 +2,50 @@
  * Shared constants for the HSR Show application
  */
 
-// CDN URL for Star Rail resources
-export const ASSET_URL = "https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/";
+// ---------------------------------------------------------------------------
+// Environment Configuration
+// ---------------------------------------------------------------------------
 
-// Base URL for the site
-export const BASE_URL = "https://hsr.pololer.my.id";
+/** CDN URL for Star Rail resources */
+export const ASSET_URL = process.env.NEXT_PUBLIC_ASSET_URL ?? "https://cdn.jsdelivr.net/gh/Mar-7th/StarRailRes@master/";
+
+/** Base URL for the site */
+export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://hsr.pololer.my.id";
+
+/** Mihomo API base URL */
+export const MIHOMO_API_URL = process.env.MIHOMO_API_URL ?? "https://api.mihomo.me";
+
+/** Enka API base URL */
+export const ENKA_API_URL = process.env.ENKA_API_URL ?? "https://enka.network";
+
+// ---------------------------------------------------------------------------
+// UI Dimensions and Layout
+// ---------------------------------------------------------------------------
+
+/** Character card dimensions */
+export const CARD_DIMENSIONS = {
+    WIDTH: 1400,
+    MIN_HEIGHT: 650
+} as const;
+
+/** Level calculation constants */
+export const LEVEL_FORMULA = {
+    PROMOTION_MULTIPLIER: 10,
+    BASE_LEVEL: 20
+} as const;
+
+/** Image sizes for Next.js Image optimization */
+export const IMAGE_SIZES = {
+    AVATAR: 128,
+    CHARACTER_ICON: 96,
+    CHARACTER_PORTRAIT: { width: 400, height: 650 },
+    RANK_ICON: 40,
+    SKILL_ICON: 48,
+    RELIC_ICON: 80,
+    LIGHT_CONE_PREVIEW: { width: 128, height: 160 },
+    STAT_ICON: 40,
+    SUBSTAT_ICON: 28
+} as const;
 
 // Roman numeral mapping for light cone ranks
 export const ROMAN_NUM: Record<number, string> = {

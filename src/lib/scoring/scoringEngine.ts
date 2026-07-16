@@ -1,9 +1,22 @@
+/**
+ * Character scoring engine based on HSR Optimizer methodology.
+ *
+ * Scoring methodology:
+ * 1. Calculate baseline DPS (character with zero substat contribution)
+ * 2. Calculate actual DPS (character with equipped relics)
+ * 3. Calculate benchmark DPS (optimal substats at 48 rolls, 0.8 quality)
+ * 4. Calculate perfection DPS (optimal substats at 54 rolls, 1.0 quality)
+ * 5. Compute score percentage using interpolation formula
+ */
+
 import type { Character } from "@/types";
 import type { CharacterProfile, ComputedStats, RelicScoreResult, CharacterScoreOutput, SubstatField } from "./types";
-import { getCharacterProfile, CHARACTER_PROFILES } from "./characterProfiles";
+import { getCharacterProfile, hasCharacterProfile } from "./characterProfiles";
 import { estimateDps } from "./dpsEstimator";
 import { rollValueAtQuality, maxRollValue, MIHOMO_TYPE_TO_FIELD } from "./substats";
-import { getGrade } from "./grades";
+import { getSimScoreGrade, calculateScorePercent, getScoringType } from "./dpsScore";
+import { getRollBudgets, applyDiminishingReturns } from "./rollCounter";
+import type { ElementId, PathId } from "@/data/types";
 
 interface BaseStats {
     atk: number;
@@ -15,8 +28,10 @@ interface BaseStats {
  * Main entry point: computes the full DPS score for a character.
  */
 export function calculateCharacterScore(character: Character): CharacterScoreOutput {
-    const profileFound = character.id in CHARACTER_PROFILES;
-    const profile = getCharacterProfile(character.id, character.element.id, character.path.id);
+    const profileFound = hasCharacterProfile(character.id);
+    const elementId = character.element.id as ElementId;
+    const pathId = character.path.id as PathId;
+    const profile = getCharacterProfile(character.id, elementId, pathId);
 
     if (!character.relics.length) {
         return {
@@ -26,7 +41,7 @@ export function calculateCharacterScore(character: Character): CharacterScoreOut
                 benchmarkSimScore: 0,
                 perfectionSimScore: 0,
                 percent: 0,
-                grade: "?",
+                grade: "N/A",
                 gradeColor: "text-neutral-500"
             },
             relics: [],
@@ -50,35 +65,33 @@ export function calculateCharacterScore(character: Character): CharacterScoreOut
     const baselineStats = extractBaselineStats(character, profile, statsMap, baseStats);
     const baselineSimScore = estimateDps(baselineStats, profile.skillMultiplier);
 
-    // 3. Benchmark: optimal substats at quality=0.8, 48 roll budget
-    const benchmarkStats = calculateOptimalStats(profile, baselineStats, baseStats, 0.8, 48);
+    // 3. Get roll budgets from HSR Optimizer methodology
+    const { benchmark: benchmarkRolls, perfection: perfectionRolls } = getRollBudgets();
+
+    // 4. Benchmark: optimal substats at quality=0.8, 48 roll budget
+    const benchmarkStats = calculateOptimalStats(profile, baselineStats, baseStats, 0.8, benchmarkRolls);
     const benchmarkSimScore = estimateDps(benchmarkStats, profile.skillMultiplier);
 
-    // 4. Perfection: optimal substats at quality=1.0, 54 roll budget
-    const perfectionStats = calculateOptimalStats(profile, baselineStats, baseStats, 1.0, 54);
+    // 5. Perfection: optimal substats at quality=1.0, 54 roll budget
+    const perfectionStats = calculateOptimalStats(profile, baselineStats, baseStats, 1.0, perfectionRolls);
     const perfectionSimScore = estimateDps(perfectionStats, profile.skillMultiplier);
 
-    // 5. Piecewise linear interpolation
-    let percent: number;
-    if (perfectionSimScore <= benchmarkSimScore) {
-        percent = originalSimScore >= benchmarkSimScore ? 1.0 : 0.5;
-    } else if (originalSimScore >= benchmarkSimScore) {
-        percent = 1.0 + (originalSimScore - benchmarkSimScore) / (perfectionSimScore - benchmarkSimScore);
-    } else if (benchmarkSimScore <= baselineSimScore) {
-        percent = 0;
-    } else {
-        percent = (originalSimScore - baselineSimScore) / (benchmarkSimScore - baselineSimScore);
-    }
-    percent = Math.max(0, percent);
+    // 6. Calculate score percentage using HSR Optimizer formula
+    const percent = calculateScorePercent(originalSimScore, baselineSimScore, benchmarkSimScore, perfectionSimScore);
 
-    // 6. Speed penalty
+    // 7. Apply speed penalty if below target (HSR Optimizer methodology)
+    let adjustedPercent = percent;
     if (profile.speedTarget && originalStats.speed < profile.speedTarget) {
-        percent *= 0.9;
+        // Penalty multiplier based on how far below target
+        const speedDeficit = profile.speedTarget - originalStats.speed;
+        const penaltyMultiplier = Math.max(0.7, 1 - speedDeficit * 0.02);
+        adjustedPercent *= penaltyMultiplier;
     }
 
-    const { grade, color } = getGrade(percent);
+    // 8. Get grade using HSR Optimizer grade scale
+    const { grade, color } = getSimScoreGrade(adjustedPercent, character.relics.length === 6);
 
-    // 7. Per-relic scoring
+    // 9. Per-relic scoring using roll efficiency
     const relicScores = scoreRelics(character, profile);
 
     return {
@@ -87,7 +100,7 @@ export function calculateCharacterScore(character: Character): CharacterScoreOut
             originalSimScore,
             benchmarkSimScore,
             perfectionSimScore,
-            percent,
+            percent: adjustedPercent,
             grade,
             gradeColor: color
         },
@@ -203,8 +216,7 @@ function applySubstatRoll(
 
 /**
  * Calculate optimal stats by greedily allocating rolls to maximize DPS.
- * Non-DPS substats (effect_hit, effect_res, break_dmg) are allocated proportionally
- * by weight since they don't affect the DPS formula directly.
+ * Uses HSR Optimizer methodology with diminishing returns.
  */
 function calculateOptimalStats(
     profile: CharacterProfile,
@@ -215,12 +227,11 @@ function calculateOptimalStats(
 ): ComputedStats {
     let workingStats = { ...baselineStats };
     const rollCounts: Partial<Record<SubstatField, number>> = {};
-    const maxPerStat = Math.ceil(rollBudget * 0.55);
+    const maxPerStat = Math.ceil(rollBudget * 0.55); // Cap at 55% of budget per stat
 
-    const weightedFields = Object.entries(profile.substatWeights).filter(([, w]) => w && w > 0) as [
-        SubstatField,
-        number
-    ][];
+    const weightedFields = Object.entries(profile.substatWeights)
+        .filter(([, w]) => w && w > 0)
+        .map(([field, weight]) => [field as SubstatField, weight] as [SubstatField, number]);
 
     // Precompute roll values once (quality is constant)
     const rollValues = new Map(weightedFields.map(([field]) => [field, rollValueAtQuality(field, quality)]));
@@ -266,7 +277,11 @@ function calculateOptimalStats(
             const rollVal = rollValues.get(field)!;
             const testStats = applySubstatRoll(workingStats, profile, field, rollVal, baseStats);
             const newDps = estimateDps(testStats, profile.skillMultiplier);
-            const gain = (newDps - currentDps) * weight;
+
+            // Apply diminishing returns for high roll counts (HSR Optimizer methodology)
+            const currentRolls = rollCounts[field] ?? 0;
+            const diminishingMultiplier = 1 / (1 + applyDiminishingReturns(currentRolls, field === "spd"));
+            const gain = (newDps - currentDps) * weight * diminishingMultiplier;
 
             if (gain > bestGain) {
                 bestGain = gain;
@@ -287,13 +302,14 @@ function calculateOptimalStats(
 
 /**
  * Score individual relics based on weighted substat value vs theoretical max.
+ * Uses HSR Optimizer roll efficiency methodology.
  */
 function scoreRelics(character: Character, profile: CharacterProfile): RelicScoreResult[] {
     // Compute sorted weights once (invariant across relics)
     const sortedWeights = Object.entries(profile.substatWeights)
         .filter(([, w]) => w && w > 0)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 4);
+        .slice(0, 4) as [SubstatField, number][];
 
     return character.relics.map(relic => {
         let actualWeightedValue = 0;
@@ -310,7 +326,7 @@ function scoreRelics(character: Character, profile: CharacterProfile): RelicScor
             }
         }
 
-        // Theoretical max for this relic
+        // Theoretical max for this relic (HSR Optimizer methodology)
         let maxWeightedValue = 0;
         let remainingRolls = maxRolls;
         for (const [, weight] of sortedWeights) {
@@ -320,8 +336,9 @@ function scoreRelics(character: Character, profile: CharacterProfile): RelicScor
             if (remainingRolls <= 0) break;
         }
 
+        // Score capped at 2.0 (200% efficiency possible for perfect+ rolls)
         const score = maxWeightedValue > 0 ? Math.min(actualWeightedValue / maxWeightedValue, 2.0) : 0;
-        const { grade, color } = getGrade(score);
+        const { grade, color } = getSimScoreGrade(score, true);
 
         return {
             relicId: relic.id,
@@ -332,3 +349,6 @@ function scoreRelics(character: Character, profile: CharacterProfile): RelicScor
         };
     });
 }
+
+// Re-export for convenience
+export { getScoringType };

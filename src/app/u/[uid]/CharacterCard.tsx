@@ -3,7 +3,7 @@
 import { useMemo, memo } from "react";
 import Image from "next/image";
 import type { Character, SkillTree } from "@/types";
-import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS, STAT_LABELS } from "@/lib/constants";
+import { ASSET_URL, ROMAN_NUM, MEMOSPRITE_LABELS, STAT_LABELS, LEVEL_FORMULA } from "@/lib/constants";
 import { TraceTree, MinorTraces } from "@/components/TraceComponents";
 import { AiFillLock } from "react-icons/ai";
 import { calculateCharacterScore } from "@/lib/scoring";
@@ -25,7 +25,15 @@ interface IconMap {
     [key: string]: SkillTree[];
 }
 
-const CharacterCard = ({
+/**
+ * CharacterCard component displays a character's build information including:
+ * - Character portrait and eidolons
+ * - Skills and traces
+ * - Light cone
+ * - Stats and relics
+ * - DPS score (optional)
+ */
+const CharacterCard = memo(function CharacterCard({
     character,
     uid,
     nickname,
@@ -36,10 +44,11 @@ const CharacterCard = ({
     allTraces,
     lang,
     dpsScore
-}: CharacterCardProps) => {
+}: CharacterCardProps) {
     // Get localized labels for Memosprite
     const localizedLabels = MEMOSPRITE_LABELS[lang] || MEMOSPRITE_LABELS["en"];
     const statLabels = STAT_LABELS[lang] || STAT_LABELS["en"];
+
     // Memoize skill type map - only recompute when skills change
     const skillTypes = useMemo(() => {
         const map = new Map<string, string>();
@@ -74,6 +83,10 @@ const CharacterCard = ({
         if (!dpsScore) return null;
         return calculateCharacterScore(character);
     }, [character, dpsScore]);
+
+    // Calculate max level from promotion
+    const maxLevel = character.promotion * LEVEL_FORMULA.PROMOTION_MULTIPLIER + LEVEL_FORMULA.BASE_LEVEL;
+
     return (
         <div className={`relative min-h-[650px] w-[1400px] rounded-3xl ${blur ? "BG" : "Blur-BG"} overflow-hidden`}>
             <div className="absolute bottom-2 left-4 z-10">
@@ -88,29 +101,33 @@ const CharacterCard = ({
                     <div className="flex h-[650px] items-center">
                         {customImage ? (
                             <div
-                                className={`h-full w-full scale-[1.15] bg-cover bg-center bg-no-repeat`}
+                                className="h-full w-full scale-[1.15] bg-cover bg-center bg-no-repeat"
                                 style={{ backgroundImage: `url(${customImage})` }}
-                            ></div>
+                                aria-label="Custom character background"
+                            />
                         ) : (
                             <Image
                                 src={ASSET_URL + character?.portrait}
-                                alt="Character Preview"
+                                alt={`${character?.name} portrait`}
                                 width={400}
                                 height={650}
                                 className="h-auto w-full scale-[1.8] object-contain"
+                                priority
                             />
                         )}
                     </div>
-                    <div className={`absolute right-0 top-0 mr-[-15px] pt-3`}>
-                        <div className="flex flex-col">
+                    <div className="absolute right-0 top-0 mr-[-15px] pt-3">
+                        <div className="flex flex-col" role="list" aria-label="Eidolons">
                             {character?.rank_icons.slice(0, character?.rank).map((rank_icon, index) => (
                                 <div
-                                    key={index}
+                                    key={rank_icon}
                                     className="relative my-1 flex rounded-full border-2 border-neutral-300 bg-neutral-800"
+                                    role="listitem"
+                                    aria-label={`Eidolon ${index + 1} - Unlocked`}
                                 >
                                     <Image
                                         src={ASSET_URL + rank_icon}
-                                        alt="Rank Icon"
+                                        alt={`Eidolon ${index + 1}`}
                                         width={40}
                                         height={40}
                                         className="h-auto w-10"
@@ -118,21 +135,23 @@ const CharacterCard = ({
                                 </div>
                             ))}
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col" role="list" aria-label="Locked Eidolons">
                             {character?.rank_icons.slice(character?.rank, 6).map((rank_icon, index) => (
                                 <div
-                                    key={index}
+                                    key={rank_icon}
                                     className="relative my-1 flex rounded-full border-2 border-neutral-500 bg-neutral-800"
+                                    role="listitem"
+                                    aria-label={`Eidolon ${character.rank + index + 1} - Locked`}
                                 >
                                     <Image
                                         src={ASSET_URL + rank_icon}
-                                        alt="Rank Icon"
+                                        alt={`Eidolon ${character.rank + index + 1} (Locked)`}
                                         width={40}
                                         height={40}
                                         className="h-auto w-10 scale-[0.9]"
                                     />
                                     <div className="absolute flex h-full w-full items-center justify-center rounded-full bg-neutral-800/70">
-                                        <AiFillLock className="h-5 w-5" />
+                                        <AiFillLock className="h-5 w-5" aria-hidden="true" />
                                     </div>
                                 </div>
                             ))}
@@ -153,7 +172,7 @@ const CharacterCard = ({
                                 </span>
                                 <Image
                                     src={ASSET_URL + character?.element.icon}
-                                    alt="Element Icon"
+                                    alt={`${character?.element.name} element`}
                                     width={56}
                                     height={56}
                                     className="h-auto w-14"
@@ -162,7 +181,7 @@ const CharacterCard = ({
                             <div className="flex flex-row items-center gap-2">
                                 <Image
                                     src={ASSET_URL + character?.path.icon}
-                                    alt="Path Icon"
+                                    alt={`${character?.path.name} path`}
                                     width={32}
                                     height={32}
                                     className="h-auto w-8"
@@ -172,10 +191,10 @@ const CharacterCard = ({
                             <div>
                                 <span className="text-2xl">Lv. {character?.level}</span>
                                 <span className="text-xl"> / </span>
-                                <span className="text-xl text-neutral-400">{character?.promotion * 10 + 20}</span>
+                                <span className="text-xl text-neutral-400">{maxLevel}</span>
                             </div>
                             {dpsScore && scoreResult ? (
-                                <div className="mt-1 flex items-center gap-2">
+                                <div className="mt-1 flex items-center gap-2" aria-label="DPS Score">
                                     <span className={`text-2xl font-bold ${scoreResult.overall.gradeColor}`}>
                                         {scoreResult.overall.grade}
                                     </span>
@@ -192,14 +211,19 @@ const CharacterCard = ({
                         {/* Middle Section - Main Container for Traces + Light Cone */}
                         <div className="flex flex-1 flex-col justify-center gap-4">
                             {/* Skills/Traces */}
-                            <div className="relative mx-4 flex h-auto w-auto flex-row items-center justify-evenly py-2">
+                            <div
+                                className="relative mx-4 flex h-auto w-auto flex-row items-center justify-evenly py-2"
+                                role="region"
+                                aria-label="Skills"
+                            >
                                 <div className="absolute mb-5">
                                     <Image
                                         src={ASSET_URL + character?.path.icon}
-                                        alt="Path Icon"
+                                        alt=""
                                         width={160}
                                         height={160}
                                         className="h-40 w-40 opacity-20"
+                                        aria-hidden="true"
                                     />
                                 </div>
                                 <div className="flex h-full w-1/3 flex-col justify-center gap-8">
@@ -208,7 +232,7 @@ const CharacterCard = ({
                                             <div className="relative flex flex-col items-center">
                                                 <Image
                                                     src={ASSET_URL + skill.icon}
-                                                    alt="Skill Icon"
+                                                    alt={`Skill: ${skillTypes.get(skill.id.slice(-2)) || "Unknown"}`}
                                                     width={48}
                                                     height={48}
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-neutral-800"
@@ -229,7 +253,7 @@ const CharacterCard = ({
                                             <div className="relative flex flex-col items-center">
                                                 <Image
                                                     src={ASSET_URL + character.skill_trees[18].icon}
-                                                    alt="Skill Icon"
+                                                    alt={localizedLabels.skill}
                                                     width={48}
                                                     height={48}
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
@@ -245,13 +269,12 @@ const CharacterCard = ({
                                         </div>
                                     ) : null}
 
-                                    {/* Elation Path - Skill at index 18 (above Ultimate) */}
                                     {character?.path?.id === "Elation" && character?.skill_trees[18] ? (
                                         <div className="flex flex-col items-center">
                                             <div className="relative flex flex-col items-center">
                                                 <Image
                                                     src={ASSET_URL + character.skill_trees[18].icon}
-                                                    alt="Skill Icon"
+                                                    alt={`Skill: ${skillTypes.get(character.skill_trees[18].id.slice(-2)) || "Unknown"}`}
                                                     width={48}
                                                     height={48}
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-amber-700"
@@ -270,7 +293,7 @@ const CharacterCard = ({
                                     <div className="relative flex flex-col items-center">
                                         <Image
                                             src={ASSET_URL + character?.skill_trees[2].icon}
-                                            alt="Skill Icon"
+                                            alt={`Skill: ${skillTypes.get(character?.skill_trees[2].id.slice(-2)) || "Unknown"}`}
                                             width={48}
                                             height={48}
                                             className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-neutral-800"
@@ -287,7 +310,7 @@ const CharacterCard = ({
                                             <div className="relative flex flex-col items-center">
                                                 <Image
                                                     src={ASSET_URL + character.skill_trees[19].icon}
-                                                    alt="Skill Icon"
+                                                    alt={localizedLabels.talent}
                                                     width={48}
                                                     height={48}
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-violet-800"
@@ -309,7 +332,7 @@ const CharacterCard = ({
                                             <div className="relative flex flex-col items-center">
                                                 <Image
                                                     src={ASSET_URL + skill.icon}
-                                                    alt="Skill Icon"
+                                                    alt={`Skill: ${skillTypes.get(skill.id.slice(-2)) || "Unknown"}`}
                                                     width={48}
                                                     height={48}
                                                     className="h-auto w-12 rounded-full border-2 border-neutral-500 bg-neutral-800"
@@ -328,8 +351,12 @@ const CharacterCard = ({
 
                             {/* Major Traces */}
                             {!allTraces ? (
-                                <div className="flex items-center justify-center">
-                                    <div className={`flex w-full flex-row justify-evenly`}>
+                                <div
+                                    className="flex items-center justify-center"
+                                    role="region"
+                                    aria-label="Major Traces"
+                                >
+                                    <div className="flex w-full flex-row justify-evenly">
                                         {majorTraces.map(icon => (
                                             <TraceTree
                                                 key={icon.id}
@@ -347,11 +374,15 @@ const CharacterCard = ({
 
                             {/* Light Cone */}
                             {character?.light_cone ? (
-                                <div className="flex flex-row items-center justify-center">
+                                <div
+                                    className="flex flex-row items-center justify-center"
+                                    role="region"
+                                    aria-label="Light Cone"
+                                >
                                     <div className="relative flex flex-col items-center">
                                         <Image
                                             src={ASSET_URL + character?.light_cone?.preview}
-                                            alt="Light Cone Preview"
+                                            alt={`${character?.light_cone?.name} light cone`}
                                             width={128}
                                             height={160}
                                             className="h-auto w-32 -rotate-13"
@@ -360,7 +391,7 @@ const CharacterCard = ({
                                             src={
                                                 ASSET_URL + "icon/deco/Rarity" + character?.light_cone?.rarity + ".png"
                                             }
-                                            alt="Light Cone Rarity Icon"
+                                            alt={`${character?.light_cone?.rarity} star rarity`}
                                             width={144}
                                             height={32}
                                             className={`absolute bottom-0 left-1 h-auto w-36 ${
@@ -381,6 +412,7 @@ const CharacterCard = ({
                                                     fontFamily:
                                                         character?.light_cone?.rank != 1 ? "Times New Roman" : ""
                                                 }}
+                                                aria-label={`Superimposition ${ROMAN_NUM[character?.light_cone?.rank]}`}
                                             >
                                                 {ROMAN_NUM[character?.light_cone?.rank]}
                                             </div>
@@ -388,7 +420,9 @@ const CharacterCard = ({
                                                 <span className="text-lg">Lv. {character?.light_cone?.level}</span>
                                                 <span> / </span>
                                                 <span className="text-neutral-400">
-                                                    {character?.light_cone?.promotion * 10 + 20}
+                                                    {character?.light_cone?.promotion *
+                                                        LEVEL_FORMULA.PROMOTION_MULTIPLIER +
+                                                        LEVEL_FORMULA.BASE_LEVEL}
                                                 </span>
                                             </div>
                                         </div>
@@ -400,7 +434,7 @@ const CharacterCard = ({
                                                 >
                                                     <Image
                                                         src={ASSET_URL + attribute.icon}
-                                                        alt="Attribute Icon"
+                                                        alt={attribute.name}
                                                         width={24}
                                                         height={24}
                                                         className="h-auto w-6"
@@ -418,7 +452,7 @@ const CharacterCard = ({
 
                         {/* Bottom Section - Relic Sets */}
                         {allTraces && (
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0" role="region" aria-label="Relic Sets">
                                 <hr />
                                 <div className="flex flex-col items-center gap-1">
                                     {character?.relic_sets.map((relic_set, index) => (
@@ -439,7 +473,11 @@ const CharacterCard = ({
                         )}
                     </div>
 
-                    <div className="flex h-[650px] w-1/3 flex-col justify-between py-3">
+                    <div
+                        className="flex h-[650px] w-1/3 flex-col justify-between py-3"
+                        role="region"
+                        aria-label="Character Stats"
+                    >
                         <div
                             className={`flex w-full flex-col justify-between gap-y-0.5 ${
                                 !allTraces && (character?.property?.length ?? 0) >= 10 ? "text-base" : "text-lg"
@@ -451,7 +489,7 @@ const CharacterCard = ({
                                     <div className="flex flex-row items-center">
                                         <Image
                                             src={ASSET_URL + stat.icon}
-                                            alt="Stat Icon"
+                                            alt={stat.name}
                                             width={40}
                                             height={40}
                                             className="h-auto w-10"
@@ -501,7 +539,7 @@ const CharacterCard = ({
                                     <div className="flex flex-row items-center">
                                         <Image
                                             src={ASSET_URL + "icon/property/IconEnergyRecovery.png"}
-                                            alt="Stat Icon"
+                                            alt={statLabels.err}
                                             width={40}
                                             height={40}
                                             className="h-auto w-10"
@@ -520,7 +558,7 @@ const CharacterCard = ({
                         {!allTraces ? (
                             <>
                                 <hr />
-                                <div className="flex flex-col items-center gap-1">
+                                <div className="flex flex-col items-center gap-1" role="region" aria-label="Relic Sets">
                                     {character?.relic_sets.map((relic_set, index) => (
                                         <div
                                             key={relic_set.id || index}
@@ -538,7 +576,7 @@ const CharacterCard = ({
                             </>
                         ) : null}
                     </div>
-                    <div className="w-1/3">
+                    <div className="w-1/3" role="region" aria-label="Relics">
                         <div className="flex h-[650px] flex-col justify-between py-3 text-lg">
                             {character?.relics.map((relic, index) => {
                                 const relicScore = dpsScore && scoreResult?.relics?.[index];
@@ -564,14 +602,14 @@ const CharacterCard = ({
                                         <div className="flex">
                                             <Image
                                                 src={ASSET_URL + relic.icon}
-                                                alt="Relic Icon"
+                                                alt={relic.name}
                                                 width={80}
                                                 height={80}
                                                 className="h-auto w-20"
                                             />
                                             <Image
                                                 src={ASSET_URL + "icon/deco/Star" + relic.rarity + ".png"}
-                                                alt="Relic Rarity Icon"
+                                                alt={`${relic.rarity} star relic`}
                                                 width={80}
                                                 height={20}
                                                 className="absolute bottom-1 h-auto w-20"
@@ -580,7 +618,7 @@ const CharacterCard = ({
                                         <div className="mx-1 flex w-1/6 flex-col items-center justify-center">
                                             <Image
                                                 src={ASSET_URL + relic.main_affix.icon}
-                                                alt="Main Affix Icon"
+                                                alt={relic.main_affix.name}
                                                 width={36}
                                                 height={36}
                                                 className="h-auto w-9"
@@ -592,12 +630,12 @@ const CharacterCard = ({
                                         <div
                                             className={`m-auto grid w-1/2 grid-cols-2 ${substatDistribution ? "mt-1 gap-0.5" : "gap-2"}`}
                                         >
-                                            {relic.sub_affix.map((sub_affix, index) => (
-                                                <div key={index} className="flex flex-col">
+                                            {relic.sub_affix.map((sub_affix, subIndex) => (
+                                                <div key={subIndex} className="flex flex-col">
                                                     <div className="flex flex-row items-center">
                                                         <Image
                                                             src={ASSET_URL + sub_affix.icon}
-                                                            alt="Sub Affix Icon"
+                                                            alt={sub_affix.name}
                                                             width={28}
                                                             height={28}
                                                             className="h-auto w-7"
@@ -612,10 +650,11 @@ const CharacterCard = ({
                                                     </div>
                                                     {substatDistribution ? (
                                                         <div className="flex w-full flex-row justify-evenly">
-                                                            {sub_affix?.dist?.map((step, index) => (
+                                                            {sub_affix?.dist?.map((step, distIndex) => (
                                                                 <div
-                                                                    key={index}
+                                                                    key={distIndex}
                                                                     className="-mt-3 text-sm text-blue-300"
+                                                                    aria-label={`${step} roll(s)`}
                                                                 >
                                                                     {step === 0 ? "." : step === 1 ? ".." : "..."}
                                                                 </div>
@@ -634,6 +673,6 @@ const CharacterCard = ({
             </div>
         </div>
     );
-};
+});
 
-export default memo(CharacterCard);
+export default CharacterCard;

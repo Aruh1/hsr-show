@@ -1,17 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useCallback, useRef, useMemo, useTransition } from "react";
+import { useState, useCallback, useMemo, useTransition } from "react";
 import { BsPcDisplay, BsAndroid2, BsApple, BsPlaystation } from "react-icons/bs";
 import Image from "next/image";
 import CharacterCard from "./CharacterCard";
-import html2canvas from "html2canvas";
-import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
-import Loading from "./loading";
 import useSWR from "swr";
-import type { ProfileData, Character, SavedBuild } from "@/types";
+import type { ProfileData, Character } from "@/types";
 import { ASSET_URL, RETRY_CONFIG } from "@/lib/constants";
+import { useProfileSettings, useSavedBuilds, useImageExport } from "@/hooks";
 
 // SWR fetcher with error handling
 const fetcher = (url: string) =>
@@ -19,29 +17,6 @@ const fetcher = (url: string) =>
         if (!res.ok) throw new Error(`API request failed with status ${res.status}`);
         return res.json();
     });
-
-// Helper to read localStorage safely during SSR
-const getLocalStorageValue = (key: string, fallback: string): string => {
-    if (typeof window === "undefined") return fallback;
-    return localStorage.getItem(key) ?? fallback;
-};
-
-const getLocalStorageBool = (key: string, fallback: boolean): boolean => {
-    if (typeof window === "undefined") return fallback;
-    const val = localStorage.getItem(key);
-    if (val === null) return fallback;
-    return val === "true";
-};
-
-interface ProfileSettings {
-    hideUID: boolean;
-    blur: boolean;
-    substatDistribution: boolean;
-    allTraces: boolean;
-    dpsScore: boolean;
-    lang: string;
-    savedUID: string;
-}
 
 interface ProfileProps {
     uid: string;
@@ -51,43 +26,27 @@ interface ProfileProps {
 const Profile = ({ uid, initialData }: ProfileProps) => {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-
-    // Safe to use lazy init — this "use client" component only renders client-side
-    const [settings, setSettings] = useState<ProfileSettings>(() => ({
-        hideUID: getLocalStorageBool("hideUID", false),
-        blur: getLocalStorageBool("backgroundBlur", false),
-        substatDistribution: getLocalStorageBool("substatDistribution", false),
-        allTraces: getLocalStorageBool("allTraces", false),
-        dpsScore: getLocalStorageBool("dpsScore", false),
-        lang: getLocalStorageValue("lang", "en"),
-        savedUID: getLocalStorageValue("uid", "")
-    }));
-
     const [character, setCharacter] = useState<Character | null>(null);
     const [selected, setSelected] = useState<number | null>(0);
-    const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>(() => {
-        if (typeof window === "undefined") return [];
-        try {
-            return JSON.parse(localStorage.getItem("savedBuilds") || "[]");
-        } catch {
-            return [];
-        }
-    });
     const [buildName, setBuildName] = useState("");
     const [showSavedBuilds, setShowSavedBuilds] = useState(false);
     const [customImage, setCustomImage] = useState<string | null>(null);
 
-    // SWR for data fetching — replaces manual fetch + retry loop
+    // Use custom hooks
+    const { settings, toggleSetting, updateSetting } = useProfileSettings();
+    const { savedBuilds, saveBuild: saveBuildToStorage, deleteBuild } = useSavedBuilds();
+    const { ref, saveImage } = useImageExport<HTMLDivElement>();
+
+    // SWR for data fetching
     const { data } = useSWR<ProfileData>(`/api/u/${uid}?lang=${settings.lang}`, fetcher, {
         fallbackData:
             settings.lang === (initialData?.powered?.includes("en") ? "en" : "en")
                 ? (initialData as ProfileData)
-                : undefined, // Basic check to avoid lang mismatch
+                : undefined,
         errorRetryCount: RETRY_CONFIG.maxRetries,
         errorRetryInterval: RETRY_CONFIG.baseDelay,
         revalidateOnFocus: false,
         onSuccess: responseData => {
-            // Set first character on initial load
             if (!character && responseData.characters?.length) {
                 setCharacter(responseData.characters[0]);
             }
@@ -112,7 +71,7 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
     const signature = data?.player.signature;
     const platform = data?.detailInfo?.platform;
 
-    // Memoize platform icon to avoid recreation on every render
+    // Memoize platform icon
     const platformIcon = useMemo(() => {
         switch (platform) {
             case "PC":
@@ -128,88 +87,50 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
         }
     }, [platform]);
 
-    // Setting toggle helper — updates state + localStorage in one call
-    const toggleSetting = useCallback(
-        (key: "hideUID" | "blur" | "substatDistribution" | "allTraces" | "dpsScore", storageKey: string) => {
-            setSettings(prev => {
-                const newValue = !prev[key];
-                localStorage.setItem(storageKey, String(newValue));
-                return { ...prev, [key]: newValue };
-            });
-        },
-        []
-    );
-
     const linkUID = useCallback(() => {
-        localStorage.setItem("uid", uid);
-        setSettings(prev => ({ ...prev, savedUID: uid }));
+        updateSetting("savedUID", uid);
         toast.success("UID linked!", { toastId: "success-uid-linked" });
-    }, [uid]);
+    }, [uid, updateSetting]);
 
-    // Fix stale closure: use functional update for savedBuilds
-    const saveBuild = useCallback(() => {
-        if (!buildName) {
+    const handleSaveBuild = useCallback(() => {
+        if (!buildName.trim()) {
             toast.error("Enter a build name!", { toastId: "error-build-name-empty" });
             return;
         }
-        const newBuild = {
-            uid: data?.player.uid,
-            nickname: data?.player.nickname,
-            buildName: buildName,
-            character: character
-        };
 
-        setSavedBuilds(prev => {
-            const newBuilds = [...prev, newBuild];
-            localStorage.setItem("savedBuilds", JSON.stringify(newBuilds));
-            return newBuilds;
-        });
-        toast.success(`${buildName} saved!`, { toastId: `success-build-saved-${buildName}` });
-        setBuildName("");
-    }, [character, buildName, data?.player.nickname, data?.player.uid]);
+        const result = saveBuildToStorage(data?.player.uid, data?.player.nickname, buildName, character);
 
-    const deleteBuild = useCallback((index: number) => {
-        setSavedBuilds(prev => {
-            const newBuilds = prev.filter((_, i) => i !== index);
-            localStorage.setItem("savedBuilds", JSON.stringify(newBuilds));
-            return newBuilds;
-        });
-        toast.success("Build deleted!", { toastId: `success-build-deleted-${index}` });
-    }, []);
+        if (result.success) {
+            toast.success(`${result.buildName} saved!`, { toastId: `success-build-saved-${buildName}` });
+            setBuildName("");
+        } else {
+            toast.error(result.error || "Failed to save build", { toastId: "error-save-build" });
+        }
+    }, [character, buildName, data?.player.nickname, data?.player.uid, saveBuildToStorage]);
 
-    const handleCharacterSelect = useCallback((index: number, character: Character) => {
+    const handleCharacterSelect = useCallback((index: number, char: Character) => {
         startTransition(() => {
-            setCharacter(character);
+            setCharacter(char);
             setSelected(index);
             setCustomImage(null);
         });
     }, []);
 
-    const ref = useRef<HTMLDivElement>(null);
-    const saveImage = useCallback(
-        (name: string, scale: number) => {
-            if (ref.current === null) {
-                return;
-            }
-
-            html2canvas(ref.current, {
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: null,
-                scale: scale
-            }).then(canvas => {
-                canvas.toBlob(function (blob) {
-                    if (blob) {
-                        saveAs(blob, `${name}_Card_${uid}.png`);
-                    }
-                });
-            });
-        },
-        [uid]
-    );
+    const handleDownloadImage = useCallback(() => {
+        if (character) {
+            saveImage(`${character.name}_Card_${uid}`, customImage ? 1 : 1.5);
+        }
+    }, [character, customImage, saveImage, uid]);
 
     if (!data) {
-        return <Loading />;
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="h-16 w-16 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+                    <span className="text-lg text-gray-300">Loading...</span>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -220,13 +141,14 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                         <div className="mx-auto flex h-auto w-full max-w-lg flex-col items-center justify-center gap-4 px-4">
                             <Image
                                 src={ASSET_URL + data?.player.avatar.icon}
-                                alt="Avatar Icon"
+                                alt={`${nickname}'s Avatar`}
                                 width={128}
                                 height={128}
                                 className="rounded-full border-2 border-stone-300 bg-stone-500"
+                                priority
                             />
                             <span className="text-3xl">{nickname}</span>
-                            <span className="text-2xl text-gray-300">{signature}</span>
+                            {signature && <span className="text-2xl text-gray-300">{signature}</span>}
                             <div className="flex w-full flex-row items-center justify-evenly gap-4 text-center">
                                 <div className="flex flex-col">
                                     <span className="text-lg text-neutral-400 md:text-2xl">Trailblaze Level</span>
@@ -239,7 +161,7 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                             </div>
                             <div className="flex w-3/4 flex-col gap-2">
                                 <span className="text-2xl text-neutral-400">Trailblaze Records</span>
-                                <div className="flex flex-row flex-wrap justify-between gap-x-4 ">
+                                <div className="flex flex-row flex-wrap justify-between gap-x-4">
                                     <span className="text-xl">Characters Owned</span>
                                     <span className="text-xl">{data?.player.space_info.avatar_count}</span>
                                 </div>
@@ -264,7 +186,7 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                     <button className="btn" onClick={() => router.push("/")}>
                                         <Image
                                             src={ASSET_URL + "icon/sign/ReplacementIcon.png"}
-                                            alt="Change UID Icon"
+                                            alt="Change UID"
                                             width={24}
                                             height={24}
                                         />
@@ -274,7 +196,7 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                         <button className="btn" onClick={linkUID}>
                                             <Image
                                                 src={ASSET_URL + "icon/sign/FriendAddIcon.png"}
-                                                alt="UID Linked"
+                                                alt="Link UID"
                                                 width={24}
                                                 height={24}
                                             />
@@ -302,7 +224,7 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                     >
                                         <Image
                                             src={ASSET_URL + "icon/sign/TeamIcon.png"}
-                                            alt="Change UID Icon"
+                                            alt="Saved Builds"
                                             width={24}
                                             height={24}
                                         />
@@ -313,43 +235,38 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                             {showSavedBuilds ? (
                                 <div className="mb-1 flex w-full max-w-lg gap-4 overflow-x-auto p-4 md:gap-6 md:p-6">
                                     {savedBuilds.map((build, index) => (
-                                        <div
-                                            className={`
-                          
-                          flex
-                          w-[100px]
-                          cursor-pointer 
-                          rounded-tr-2xl
-                          shadow-md 
-                          hover:brightness-110
-                          ${selected === index ? "ring-2 ring-neutral-300 " : ""}
-                        `}
-                                            onClick={() => handleCharacterSelect(index, savedBuilds[index].character)}
-                                            key={index}
+                                        <button
+                                            className={`flex w-[100px] cursor-pointer rounded-tr-2xl shadow-md hover:brightness-110 ${
+                                                selected === index ? "ring-2 ring-neutral-300" : ""
+                                            }`}
+                                            onClick={() => handleCharacterSelect(index, build.character)}
+                                            key={build.buildName}
+                                            aria-label={`Select build: ${build.buildName}`}
                                         >
                                             <div className="relative flex w-[100px] flex-col">
                                                 <div className="relative">
                                                     <Image
                                                         src={ASSET_URL + build.character.preview}
-                                                        alt="Character Preview"
+                                                        alt={`${build.character.name} preview`}
                                                         width={96}
                                                         height={96}
                                                     />
-                                                    <span className="absolute bottom-0 left-0 w-full p-1">
+                                                    <span className="absolute bottom-0 left-0 w-full bg-black/50 p-1 text-xs">
                                                         {build.buildName}
                                                     </span>
                                                 </div>
                                                 {selected === index ? (
-                                                    <div
-                                                        className={
-                                                            "absolute left-0 top-0 text-gray-400 hover:text-gray-500"
-                                                        }
+                                                    <button
+                                                        className="absolute left-0 top-0 p-1 text-gray-400 hover:text-red-400"
                                                         onClick={e => {
                                                             e.stopPropagation();
                                                             deleteBuild(index);
+                                                            toast.success("Build deleted!", {
+                                                                toastId: `success-build-deleted-${index}`
+                                                            });
                                                         }}
+                                                        aria-label={`Delete build: ${build.buildName}`}
                                                     >
-                                                        <span className="sr-only">Delete</span>
                                                         <svg
                                                             className="h-6 w-6"
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -365,29 +282,30 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                                                 d="M6 18L18 6M6 6l12 12"
                                                             />
                                                         </svg>
-                                                    </div>
+                                                    </button>
                                                 ) : null}
                                             </div>
-                                        </div>
+                                        </button>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="flex flex-row flex-wrap justify-center gap-6 p-6 md:flex-nowrap">
-                                    {data?.characters.map((character, index) => (
-                                        <Image
-                                            src={ASSET_URL + character.icon}
-                                            alt="Character Preview"
-                                            width={96}
-                                            height={96}
-                                            className={`
-                            cursor-pointer 
-                            rounded-full 
-                            hover:brightness-110 
-                            ${selected === index ? "bg-white ring-2 ring-neutral-300" : ""}
-                          `}
-                                            onClick={() => handleCharacterSelect(index, data.characters[index])}
-                                            key={index}
-                                        />
+                                    {data?.characters.map((char, index) => (
+                                        <button
+                                            key={char.id}
+                                            onClick={() => handleCharacterSelect(index, char)}
+                                            className={`cursor-pointer rounded-full hover:brightness-110 ${
+                                                selected === index ? "bg-white ring-2 ring-neutral-300" : ""
+                                            }`}
+                                            aria-label={`Select ${char.name}`}
+                                        >
+                                            <Image
+                                                src={ASSET_URL + char.icon}
+                                                alt={`${char.name} icon`}
+                                                width={96}
+                                                height={96}
+                                            />
+                                        </button>
                                     ))}
                                 </div>
                             )}
@@ -418,11 +336,11 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                 <div className="flex w-full max-w-4xl flex-col items-center justify-center px-4">
                                     <button
                                         className="btn my-2 gap-3 bg-purple-600 px-4 py-2 text-2xl hover:bg-purple-500"
-                                        onClick={() => saveImage(character.name, customImage ? 1 : 1.5)}
+                                        onClick={handleDownloadImage}
                                     >
                                         <Image
                                             src={ASSET_URL + "icon/sign/SettingsImageIcon.png"}
-                                            alt="Save Image Icon"
+                                            alt="Download"
                                             width={28}
                                             height={28}
                                         />
@@ -430,7 +348,9 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                     </button>
                                     <div className="my-2 flex flex-row flex-wrap items-center justify-center gap-2">
                                         <label
-                                            className={`btn text-sm ${customImage ? "border border-purple-500 bg-purple-600/30" : ""}`}
+                                            className={`btn text-sm ${
+                                                customImage ? "border border-purple-500 bg-purple-600/30" : ""
+                                            }`}
                                         >
                                             Custom Image
                                             <input
@@ -445,32 +365,44 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                             />
                                         </label>
                                         <button
-                                            className={`btn text-sm ${settings.hideUID ? "border border-purple-500 bg-purple-600/30" : ""}`}
-                                            onClick={() => toggleSetting("hideUID", "hideUID")}
+                                            className={`btn text-sm ${
+                                                settings.hideUID ? "border border-purple-500 bg-purple-600/30" : ""
+                                            }`}
+                                            onClick={() => toggleSetting("hideUID")}
                                         >
                                             Hide UID / Name
                                         </button>
                                         <button
-                                            className={`btn text-sm ${settings.blur ? "border border-purple-500 bg-purple-600/30" : ""}`}
-                                            onClick={() => toggleSetting("blur", "backgroundBlur")}
+                                            className={`btn text-sm ${
+                                                settings.blur ? "border border-purple-500 bg-purple-600/30" : ""
+                                            }`}
+                                            onClick={() => toggleSetting("blur")}
                                         >
                                             Unblur Background
                                         </button>
                                         <button
-                                            className={`btn text-sm ${settings.substatDistribution ? "border border-purple-500 bg-purple-600/30" : ""}`}
-                                            onClick={() => toggleSetting("substatDistribution", "substatDistribution")}
+                                            className={`btn text-sm ${
+                                                settings.substatDistribution
+                                                    ? "border border-purple-500 bg-purple-600/30"
+                                                    : ""
+                                            }`}
+                                            onClick={() => toggleSetting("substatDistribution")}
                                         >
                                             Substat Distribution
                                         </button>
                                         <button
-                                            className={`btn text-sm ${settings.allTraces ? "border border-purple-500 bg-purple-600/30" : ""}`}
-                                            onClick={() => toggleSetting("allTraces", "allTraces")}
+                                            className={`btn text-sm ${
+                                                settings.allTraces ? "border border-purple-500 bg-purple-600/30" : ""
+                                            }`}
+                                            onClick={() => toggleSetting("allTraces")}
                                         >
                                             Hide Minor Traces
                                         </button>
                                         <button
-                                            className={`btn text-sm ${settings.dpsScore ? "border border-purple-500 bg-purple-600/30" : ""}`}
-                                            onClick={() => toggleSetting("dpsScore", "dpsScore")}
+                                            className={`btn text-sm ${
+                                                settings.dpsScore ? "border border-purple-500 bg-purple-600/30" : ""
+                                            }`}
+                                            onClick={() => toggleSetting("dpsScore")}
                                         >
                                             DPS Score
                                         </button>
@@ -486,7 +418,7 @@ const Profile = ({ uid, initialData }: ProfileProps) => {
                                             aria-label="Build Name"
                                             maxLength={30}
                                         />
-                                        <button className="btn rounded-l-none rounded-r-lg" onClick={saveBuild}>
+                                        <button className="btn rounded-l-none rounded-r-lg" onClick={handleSaveBuild}>
                                             Save Build
                                         </button>
                                     </div>
