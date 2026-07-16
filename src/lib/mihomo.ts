@@ -3,6 +3,7 @@ import { RETRY_CONFIG } from "@/lib/constants";
 import { processCharacter, type ApiCharacter } from "@/lib/processCharacter";
 import { calculateCharacterScoreCached } from "./cachedScoring";
 import type { ProfileData, Character } from "@/types";
+import { getEnkaData } from "./enkaTransformer";
 
 // ---------------------------------------------------------------------------
 // Retry-capable fetch with AbortController timeout
@@ -47,6 +48,7 @@ function calculateBackoffDelay(baseDelay: number, attempt: number, backoffFactor
 
 /**
  * Fetch data from Mihomo API with Next.js 16 'use cache' directive.
+ * Falls back to Enka Network API if Mihomo fails.
  */
 export async function getMihomoData(uid: string, lang: string) {
     "use cache";
@@ -56,31 +58,62 @@ export async function getMihomoData(uid: string, lang: string) {
     const infoUrl = `https://api.mihomo.me/sr_info_parsed/${uid}?lang=${lang}`;
     const rawUrl = `https://api.mihomo.me/sr_info/${uid}?lang=${lang}`;
 
-    // Concurrent upstream fetches
-    const [data, rawData] = await Promise.all([
-        fetchWithRetry(infoUrl).then(res => res.json()),
-        fetchWithRetry(rawUrl)
-            .then(res => res.json())
-            .catch(() => ({ detailInfo: { platform: "unknown" } }))
-    ]);
+    try {
+        // Try Mihomo API first
+        const [data, rawData] = await Promise.all([
+            fetchWithRetry(infoUrl).then(res => res.json()),
+            fetchWithRetry(rawUrl)
+                .then(res => res.json())
+                .catch(() => ({ detailInfo: { platform: "unknown" } }))
+        ]);
 
-    if (!data.characters?.length) {
-        throw new Error("No characters found");
+        if (!data.characters?.length) {
+            throw new Error("No characters found");
+        }
+
+        // Process characters and pre-warm scoring cache
+        data.characters = await Promise.all(
+            data.characters.map(async (char: ApiCharacter) => {
+                const processed = processCharacter(char);
+                // Pre-warm scoring cache for each character asynchronously
+                void calculateCharacterScoreCached(processed as unknown as Character);
+                return processed;
+            })
+        );
+
+        return {
+            ...data,
+            detailInfo: rawData.detailInfo ?? { platform: "unknown" },
+            powered: "API mihomo: https://api.mihomo.me/"
+        } as ProfileData;
+    } catch (mihomoError) {
+        // Log Mihomo failure and try Enka Network API as fallback
+        console.warn(
+            "Mihomo API failed, trying Enka Network API:",
+            mihomoError instanceof Error ? mihomoError.message : mihomoError
+        );
+
+        try {
+            const enkaData = await getEnkaData(uid, lang);
+
+            // Pre-warm scoring cache for each character
+            if (enkaData.characters?.length) {
+                void Promise.all(
+                    enkaData.characters.map(async (char: Character) => {
+                        void calculateCharacterScoreCached(char);
+                    })
+                );
+            }
+
+            return enkaData;
+        } catch (enkaError) {
+            // Both APIs failed, throw the last error with cause
+            console.error(
+                "Both Mihomo and Enka APIs failed:",
+                enkaError instanceof Error ? enkaError.message : enkaError
+            );
+            const message = enkaError instanceof Error ? enkaError.message : "Unknown error";
+            throw new Error(`Failed to fetch profile data: ${message}`, { cause: enkaError });
+        }
     }
-
-    // Process characters and pre-warm scoring cache
-    data.characters = await Promise.all(
-        data.characters.map(async (char: ApiCharacter) => {
-            const processed = processCharacter(char);
-            // Pre-warm scoring cache for each character asynchronously
-            void calculateCharacterScoreCached(processed as unknown as Character);
-            return processed;
-        })
-    );
-
-    return {
-        ...data,
-        detailInfo: rawData.detailInfo ?? { platform: "unknown" },
-        powered: "API mihomo: https://api.mihomo.me/"
-    } as ProfileData;
 }
